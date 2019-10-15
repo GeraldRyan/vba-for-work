@@ -15,7 +15,7 @@ Public Sub ExportVisualBasicCode()
     Dim extension As String
     Dim fso As New FileSystemObject
     
-    directory = ActiveWorkbook.path & "\VisualBasic"
+    directory = ActiveWorkbook.path & "\VBA Modules"
     count = 0
     
     If Not fso.FolderExists(directory) Then

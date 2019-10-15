@@ -4,7 +4,6 @@ Sub ActiveSheetDelete()
 ' deleteWS Macro
 '
 
-'
 Application.ActiveSheet.Delete
 End Sub
 

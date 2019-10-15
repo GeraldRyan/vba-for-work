@@ -13,14 +13,12 @@ Next cell
 
 End Sub
 
-Sub Trimmy()
-Application.ScreenUpdating = False
+Sub Trimmer()
 
-Dim Billiam As Range
-Set Billiam = Selection
-For Each cell In Billiam
-cell.Value = Trim(cell)
+Dim rng As Range
+Set rng = Selection
+For Each cell In rng
+    cell.Value = WorksheetFunction.Trim(cell)
 Next cell
 
-Application.ScreenUpdating = True
 End Sub
