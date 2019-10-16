@@ -1,0 +1,50 @@
+Option Explicit
+
+Sub main()
+
+'declare variables
+Dim PivotTableWS As Worksheet
+Set PivotTableWS = Application.ActiveSheet
+Dim ws As Worksheet
+Dim looptimes As Integer
+Dim cell As Range
+Dim ptlname As String
+
+
+For Each ws In Application.ActiveWorkbook.Worksheets
+    If ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then
+    GoTo Next1
+    End If
+    For Each cell In PivotTableWS.UsedRange
+        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
+            ptlname = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
+            If ptlname = ws.name Then
+                Call TransferData(PivotTableWS, ws, cell)
+            End If
+        End If
+    Next
+Next1:
+Next
+
+End Sub
+
+
+Sub TransferData(PivotTableWS As Worksheet, ws As Worksheet, name As Range)
+Dim looptimes As Integer
+
+    looptimes = loopvalues(PivotTableWS, ws, name)
+    MsgBox ("The name is : " & name.Value & looptimes) 'and the code and hours are " & cell.Offset(0, 1).Value & " and " & cell.Offset(0, 2).Value)
+
+    ' Do your code transfering, or call the true transfer function
+
+End Sub
+
+
+Function loopvalues(PivotTableWS As Worksheet, ws As Worksheet, cell As Range)
+    Dim endrow As Integer
+    Dim startrow As Integer
+    startrow = cell.Row
+    endrow = cell.End(xlDown).Row
+    loopvalues = endrow - startrow
+
+End Function
