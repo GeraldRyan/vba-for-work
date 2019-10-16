@@ -2,6 +2,9 @@ Option Explicit
 
 Sub main()
 
+Application.EnableEvents = False
+Application.ScreenUpdating = False
+
 'declare variables
 Dim PivotTableWS As Worksheet
 Set PivotTableWS = Application.ActiveSheet
@@ -15,6 +18,14 @@ For Each ws In Application.ActiveWorkbook.Worksheets
     If ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then
     GoTo Next1
     End If
+    
+    ' initialize value to zero
+    For Each cell In ws.Range("B:B")
+        If IsNumeric(cell.Value) And cell.Value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
+            cell.FormulaR1C1 = 0
+        End If
+    Next
+    
     For Each cell In PivotTableWS.UsedRange
         If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
             ptlname = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
@@ -25,18 +36,35 @@ For Each ws In Application.ActiveWorkbook.Worksheets
     Next
 Next1:
 Next
-
+Application.EnableEvents = True
+Application.ScreenUpdating = True
 End Sub
 
 
 Sub TransferData(PivotTableWS As Worksheet, ws As Worksheet, name As Range)
 Dim looptimes As Integer
+Dim datatotransfer As Long
+Dim i As Integer
+Dim indexnumber As Long
+Dim celltopasteto As Range
+
 
     looptimes = loopvalues(PivotTableWS, ws, name)
-    MsgBox ("The name is : " & name.Value & looptimes) 'and the code and hours are " & cell.Offset(0, 1).Value & " and " & cell.Offset(0, 2).Value)
+    'MsgBox ("The name is : " & name.Value & looptimes) 'and the code and hours are " & cell.Offset(0, 1).Value & " and " & cell.Offset(0, 2).Value)
 
-    ' Do your code transfering, or call the true transfer function
+    ' initialize all preexisting data to zero
+    
 
+
+
+    ' Transfer data looptimes times
+    For i = 0 To looptimes - 1
+        indexnumber = name.Offset(i, 1).FormulaR1C1
+        datatotransfer = name.Offset(i, 2).FormulaR1C1
+        Set celltopasteto = ws.UsedRange.Find(indexnumber).Offset(0, 1)
+        celltopasteto.FormulaR1C1 = datatotransfer
+               
+    Next
 End Sub
 
 
