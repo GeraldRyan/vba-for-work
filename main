@@ -11,8 +11,8 @@ ClientName = range("C10").FormulaR1C1
 Dim BillPeriod As String
 Dim bRunDV As Boolean
 
-On Error GoTo ErrorHandler:
-BillPeriod = Right(range("A4").FormulaR1C1, Len(range("A4").FormulaR1C1) - 5)
+'On Error GoTo ErrorHandler:
+BillPeriod = Right(Application.Worksheets("Report").range("A4").FormulaR1C1, Len(Application.Worksheets("Report").range("A4").FormulaR1C1) - 5)
 Dim DirToSave As String
 'DirToSave = MyDocsPath & "\Documents\" & "EngagementTimeReports\"
 Dim FileNameToSaveAs As String
@@ -20,15 +20,20 @@ FileNameToSaveAs = ClientName & BillPeriod
 Application.EnableEvents = False
 SaveSettingsFile = MyDocsPath() & "\Documents\" & "SaveSettings.txt"
 Dim ReportWSName$
-ReportWSName = Application.ActiveSheet.name
+ReportWSName = "Report"
 Dim PTFormat As String
 PTFormat = "PTFormat"
 Application.ScreenUpdating = False
+Dim bAskUser As Integer
 
 'make sure pivot table sheet doesn't already exist
 If WorksheetExists("PivotTable") Then
-    MsgBox ("Pivot Table already exists. Delete Worksheet and re-run")
-    Exit Sub
+    bAskUser = MsgBox("Pivot Table already exists. Do you want to refresh with a changed table?", vbQuestion + vbYesNo, "Would you like to update table?")
+'    Else: bReplacePivot = False
+'    End If
+    'bReplacePivot = MsgBox("Pivot Table already exists. Do you want to refresh with a changed table?", vbQuestion + vbYesNo, "Would you like to update table?")
+    If bAskUser = 6 Then Application.Worksheets("PivotTable").Delete
+    If bAskUser = 7 Then GoTo Endd:
 End If
 
 'make sure pivot table sheet doesn't already exist
@@ -69,10 +74,11 @@ Call SaveWorkbook(DirToSave, FileNameToSaveAs)
 Application.EnableEvents = True
 
 'wish them well
+Endd:
 mymessage
 Exit Sub
 ErrorHandler:
-MsgBox "Be sure the report worksheet is selected"
+MsgBox "Unknown error. Delete all but first tab and try again"
 End Sub
 
 
