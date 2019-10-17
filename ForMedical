@@ -6,42 +6,47 @@ Application.EnableEvents = False
 Application.ScreenUpdating = False
 
 'declare variables
-Dim PivotTableWS As Worksheet
+Dim PivotTableWS As worksheet
 Set PivotTableWS = Application.ActiveSheet
-Dim ws As Worksheet
+Dim ws As worksheet
 Dim looptimes As Integer
 Dim cell As Range
 Dim ptlname As String
 
-
+' initialize value to zero (This loop runs about 15 times)
 For Each ws In Application.ActiveWorkbook.Worksheets
-    If ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then
-    GoTo Next1
-    End If
-    
-    ' initialize value to zero
-    For Each cell In ws.Range("B:B")
-        If IsNumeric(cell.Value) And cell.Value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
-            cell.FormulaR1C1 = 0
-        End If
-    Next
-    
+    If ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then GoTo next1
+    Call ZeroOut(ws)
+
+
     For Each cell In PivotTableWS.UsedRange
+    
+        'check if a real name but not their totals (c. 50 instances)
         If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
+            
+            ' record the name (50*15)
             ptlname = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
+            
+            ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
             If ptlname = ws.name Then
                 Call TransferData(PivotTableWS, ws, cell)
             End If
         End If
     Next
-Next1:
+
+
+next1:
 Next
+    
+
 Application.EnableEvents = True
 Application.ScreenUpdating = True
+
+MsgBox ("Have a nice day")
 End Sub
 
 
-Sub TransferData(PivotTableWS As Worksheet, ws As Worksheet, name As Range)
+Sub TransferData(PivotTableWS As worksheet, ws As worksheet, name As Range)
 Dim looptimes As Integer
 Dim datatotransfer As Long
 Dim i As Integer
@@ -68,7 +73,7 @@ Dim celltopasteto As Range
 End Sub
 
 
-Function loopvalues(PivotTableWS As Worksheet, ws As Worksheet, cell As Range)
+Function loopvalues(PivotTableWS As worksheet, ws As worksheet, cell As Range)
     Dim endrow As Integer
     Dim startrow As Integer
     startrow = cell.Row
@@ -76,3 +81,54 @@ Function loopvalues(PivotTableWS As Worksheet, ws As Worksheet, cell As Range)
     loopvalues = endrow - startrow
 
 End Function
+
+
+Sub ZeroOut(ws As worksheet)
+
+Dim cell As Range
+Dim LastRow As Long
+Dim rng As Range
+LastRow = ws.UsedRange.rows.count
+Set rng = ws.Range("B1:B" & LastRow)
+
+If ws.name = "Summary" Or ws.Visible = False Then
+    GoTo Endd
+End If
+
+For Each cell In rng
+    If IsNumeric(cell.Value) And cell.Value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
+        cell.FormulaR1C1 = 0
+    End If
+Next
+
+Endd:
+End Sub
+
+''Not working yet but not called
+''Don't know how to work with Arrays and for each loops sufficiently
+Sub DataValidator(PT As worksheet)
+
+Dim TotalPT As Long
+Dim ws As worksheet
+Dim RunningTotal As Long
+Dim wscount As Integer
+Dim WsTotalArray() As Long
+RunningTotal = 0
+Dim i As Integer
+i = 0
+WsTotalArray = 0
+
+wscount = Application.Worksheets.count
+For Each ws In Application.ActiveWorkbook.Worksheets
+    If ws.name = "Summary" Or ws.Visible = False Then GoTo next1
+    WsTotalArray = WsTotalArray(ws) + ws.Range("B11").Value
+
+
+
+next1:
+Next
+
+
+
+
+End Sub
