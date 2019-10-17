@@ -40,6 +40,7 @@ End If
 If WorksheetExists("PTFormat") Then
     bRunDV = False
     Worksheets("PTFormat").Activate
+    range("A1").Select
 
 Else:
     'format the data to be able to make the pivot table
