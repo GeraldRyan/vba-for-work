@@ -19,7 +19,7 @@ FileNameToSaveAs = ClientName & BillPeriod
 Application.EnableEvents = False
 SaveSettingsFile = MyDocsPath() & "\Documents\" & "SaveSettings.txt"
 Dim ReportWSName$
-ReportWSName = Application.ActiveSheet.Name
+ReportWSName = Application.ActiveSheet.name
 Dim PTFormat As String
 PTFormat = "PTFormat"
 
@@ -89,14 +89,14 @@ Dim xdel As Range
 Dim rowsdeleted As Integer
 rowsdeleted = 0
 Dim ReportWSName As String
-ReportWSName = Application.ActiveSheet.Name
+ReportWSName = Application.ActiveSheet.name
 Dim PTFormat As String
 PTFormat = "PTFormat"
 
 'make sure pivot table sheet doesn't already exist
 If Not WorksheetExists("PTFormat") Then
     Application.ActiveSheet.Copy After:=Application.ActiveSheet
-    Application.ActiveSheet.Name = PTFormat
+    Application.ActiveSheet.name = PTFormat
     Worksheets("PTFormat").Activate
 Else:
     Worksheets("PTFormat").Activate
@@ -124,7 +124,7 @@ Set LastCell = LastCell.End(xlToLeft)
 Set LastCell = LastCell.End(xlToLeft)
 Set LastCell = LastCell.End(xlToLeft)
 Set First = Range("A2")
-mycount = Range(First, LastCell).Cells.Count
+mycount = Range(First, LastCell).Cells.count
 First.Select
 'GoTo tempstart
 
@@ -229,14 +229,14 @@ On Error Resume Next
 Set DSheet = Application.ActiveSheet
 Application.DisplayAlerts = False
 Sheets.Add After:=Application.ActiveSheet
-Application.ActiveSheet.Name = "PivotTable"
+Application.ActiveSheet.name = "PivotTable"
 Application.DisplayAlerts = True
 Set PSheet = Worksheets("PivotTable")
 'Set DSheet = Worksheets("Report")
 
 'Define Data Range
-LastRow = DSheet.Cells(rows.Count, 1).End(xlUp).Row
-LastCol = DSheet.Cells(1, Columns.Count).End(xlToLeft).Column
+LastRow = DSheet.Cells(rows.count, 1).End(xlUp).Row
+LastCol = DSheet.Cells(1, Columns.count).End(xlToLeft).Column
 Set PRange = DSheet.Cells(1, 1).Resize(LastRow - 1, LastCol)
 
 'Define Pivot Cache
@@ -270,7 +270,7 @@ With Application.ActiveSheet.PivotTables("TimeUsage").PivotFields("Bill Hrs")
     .Function = xlSum
     ''' TODO try toggling this to see what happens
     '.NumberFormat = "#,##0"
-    .Name = "Sum of Bill Hours"
+    .name = "Sum of Bill Hours"
 End With
 
 'Format Pivot
@@ -371,7 +371,7 @@ Sub FormatCellsROG()
     '' sets red shade RED text if less than -5
     Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, _
         Formula1:="=-5"
-    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+    Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
         .Color = -16383844
         .TintAndShade = 0
@@ -386,7 +386,7 @@ Sub FormatCellsROG()
     '' sets ORANGE shade and red text if between -5 and -.51
     Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlBetween, _
         Formula1:="=-5", Formula2:="=-.51"
-    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+    Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
         .Color = -16776961
         .TintAndShade = 0
@@ -402,7 +402,7 @@ Sub FormatCellsROG()
     '' sets GREEN shade and black text if greater than 0
     Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, _
         Formula1:="=0"
-    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+    Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
         .Color = -16752384
         .TintAndShade = 0
@@ -421,7 +421,7 @@ Dim cell As Range
     For Each cell In Selection
     cell.FormatConditions.Add Type:=xlExpression, Formula1:= _
         "=LEN(TRIM(" & cell.Address & "))=0"
-    cell.FormatConditions(cell.FormatConditions.Count).SetFirstPriority
+    cell.FormatConditions(cell.FormatConditions.count).SetFirstPriority
     With cell.FormatConditions(1).Interior
         .PatternColorIndex = xlAutomatic
         .Color = 10092543
