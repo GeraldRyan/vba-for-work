@@ -1,12 +1,14 @@
 Attribute VB_Name = "RegularNames"
 Sub RegularNames()
-Dim WkRg As Range, Rg As Range
+Dim Rng As Range, cell As Range
 Dim T
-    Set WkRg = Selection
-    For Each Rg In WkRg
-        T = Split(Rg, ",")
-        Rg = Trim(T(1)) & " " & Trim(T(0))
-    Next Rg
+    Set Rng = Selection
+    On Error Resume Next
+    For Each cell In Rng
+        T = Split(cell, ",")
+        cell = Trim(T(1)) & " " & Trim(T(0))
+    Next cell
+
 End Sub
 
 '' Note the following two macros didn't work but they're there for legacy and to maybe someday debug

@@ -15,9 +15,9 @@ End Sub
 
 Sub Trimmer()
 
-Dim rng As Range
-Set rng = Selection
-For Each cell In rng
+Dim Rng As Range
+Set Rng = Selection
+For Each cell In Rng
     cell.Value = WorksheetFunction.Trim(cell)
 Next cell
 

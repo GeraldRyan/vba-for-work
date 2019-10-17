@@ -122,7 +122,7 @@ Sub Ariall()
 '
     Cells.Select
     With Selection.Font
-        .Name = "Arial"
+        .name = "Arial"
     End With
 End Sub
 
@@ -205,24 +205,24 @@ ErrorHandler:
 MsgBox ("Sorry, value is not valid.")
 End Sub
 Sub highlightMaxValue()
-Dim rng As Range
-For Each rng In Selection
-If rng = WorksheetFunction.Max(Selection) Then
-rng.Style = "Good"
+Dim Rng As Range
+For Each Rng In Selection
+If Rng = WorksheetFunction.Max(Selection) Then
+Rng.Style = "Good"
 End If
-Next rng
+Next Rng
 End Sub
 
 Sub highlightMinValue()
 
 
 
-Dim rng As Range
-    For Each rng In Selection
-        If rng = WorksheetFunction.Min(Selection) Then
-        rng.Style = "Good"
+Dim Rng As Range
+    For Each Rng In Selection
+        If Rng = WorksheetFunction.Min(Selection) Then
+        Rng.Style = "Good"
         End If
-    Next rng
+    Next Rng
 
 End Sub
 

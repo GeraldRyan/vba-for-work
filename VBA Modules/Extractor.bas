@@ -15,7 +15,7 @@ Public Sub ExportVisualBasicCode()
     Dim extension As String
     Dim fso As New FileSystemObject
     
-    directory = ActiveWorkbook.path & "\VBA Modules"
+    directory = ActiveWorkbook.path & "\VisualBasic"
     count = 0
     
     If Not fso.FolderExists(directory) Then
@@ -39,14 +39,14 @@ Public Sub ExportVisualBasicCode()
         On Error Resume Next
         Err.Clear
         
-        path = directory & "\" & VBComponent.Name & extension
+        path = directory & "\" & VBComponent.name & extension
         Call VBComponent.Export(path)
         
         If Err.Number <> 0 Then
-            Call MsgBox("Failed to export " & VBComponent.Name & " to " & path, vbCritical)
+            Call MsgBox("Failed to export " & VBComponent.name & " to " & path, vbCritical)
         Else
             count = count + 1
-            Debug.Print "Exported " & Left$(VBComponent.Name & ":" & Space(Padding), Padding) & path
+            Debug.Print "Exported " & Left$(VBComponent.name & ":" & Space(Padding), Padding) & path
         End If
 
         On Error GoTo 0

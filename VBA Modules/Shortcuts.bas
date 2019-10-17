@@ -58,7 +58,7 @@ Sub arial8()
 '
 
     With Selection.Font
-        .Name = "Arial"
+        .name = "Arial"
         .Size = 8
     End With
 End Sub

@@ -20,7 +20,7 @@ FileNameToSaveAs = ClientName & BillPeriod
 Application.EnableEvents = False
 SaveSettingsFile = MyDocsPath() & "\Documents\" & "SaveSettings.txt"
 Dim ReportWSName$
-ReportWSName = Application.ActiveSheet.Name
+ReportWSName = Application.ActiveSheet.name
 Dim PTFormat As String
 PTFormat = "PTFormat"
 
@@ -90,14 +90,14 @@ Dim xdel As Range
 Dim rowsdeleted As Integer
 rowsdeleted = 0
 Dim ReportWSName As String
-ReportWSName = Application.ActiveSheet.Name
+ReportWSName = Application.ActiveSheet.name
 Dim PTFormat As String
 PTFormat = "PTFormat"
 
 'make sure pivot table sheet doesn't already exist
 If Not WorksheetExists("PTFormat") Then
     Application.ActiveSheet.Copy After:=Application.ActiveSheet
-    Application.ActiveSheet.Name = PTFormat
+    Application.ActiveSheet.name = PTFormat
     Worksheets("PTFormat").Activate
 Else:
     Worksheets("PTFormat").Activate
@@ -230,7 +230,7 @@ On Error Resume Next
 Set DSheet = Application.ActiveSheet
 Application.DisplayAlerts = False
 Sheets.Add After:=Application.ActiveSheet
-Application.ActiveSheet.Name = "PivotTable"
+Application.ActiveSheet.name = "PivotTable"
 Application.DisplayAlerts = True
 Set PSheet = Worksheets("PivotTable")
 'Set DSheet = Worksheets("Report")
@@ -271,7 +271,7 @@ With Application.ActiveSheet.PivotTables("TimeUsage").PivotFields("Bill Hrs")
     .Function = xlSum
     ''' TODO try toggling this to see what happens
     '.NumberFormat = "#,##0"
-    .Name = "Sum of Bill Hours"
+    .name = "Sum of Bill Hours"
 End With
 
 'Format Pivot
