@@ -1,35 +1,41 @@
 Option Explicit
 
+Dim Difference As Long
+Dim PT As Worksheet
+Dim bAnswer As Integer
+Dim CountMissed As Integer
+Dim newsheets As Integer
+
+
 Sub main()
 
 Application.EnableEvents = False
 Application.ScreenUpdating = False
 
 'declare variables
-Dim PivotTableWS As worksheet
-Set PivotTableWS = Application.ActiveSheet
-Dim ws As worksheet
+Set PT = Application.ActiveSheet
+Dim ws As Worksheet
 Dim looptimes As Integer
 Dim cell As Range
 Dim ptlname As String
 
 ' initialize value to zero (This loop runs about 15 times)
 For Each ws In Application.ActiveWorkbook.Worksheets
-    If ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then GoTo next1
+    If ws.name = "Summary" Or ws.name = PT.name Or ws.Visible = False Then GoTo next1
     Call ZeroOut(ws)
 
 
-    For Each cell In PivotTableWS.UsedRange
+    For Each cell In PT.UsedRange
     
         'check if a real name but not their totals (c. 50 instances)
-        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
+        If InStr(cell.value, ",") <> 0 And cell.Offset(0, 1).value <> "" Then
             
             ' record the name (50*15)
-            ptlname = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
+            ptlname = Mid(cell.value, InStr(cell.value, ",") + 2, 1) & ". " & Left(cell.value, InStr(cell.value, ",") - 1)
             
             ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
             If ptlname = ws.name Then
-                Call TransferData(PivotTableWS, ws, cell)
+                Call TransferData(ws, cell)
             End If
         End If
     Next
@@ -39,14 +45,30 @@ next1:
 Next
     
 
-Application.EnableEvents = True
-Application.ScreenUpdating = True
+Call DataValidator(PT)
 
-MsgBox ("Have a nice day")
+
+If Difference = 0 Then
+    MsgBox ("Done. Numbers balance out. Have a nice day")
+Else
+    'warn user
+    If CountMissed > 0 Then
+        bAnswer = MsgBox("Done. Numbers don't tie out, off by " & Difference & " hours. It looks like not all new doctors were added. Would you like to add new worksheets from template for any and all new doctors? Re-run macro to get these populated and make sure no duplicates exist", vbYesNo)
+        'ask if should add doctors
+        If bAnswer = 6 Then
+            Call DoctorAdder
+            MsgBox (newsheets & " new sheets added from template, set to zero. Remember to re-run the macro to populate them and see if there remains a difference")
+        End If
+    End If
+MsgBox ("Done. Numbers don't tie out, off by " & Difference & " hours. Data usually transfers well or not at all, so review all worksheets with zero values. The name of the doctor worksheet has to match the name in the pivot table with specific formatting or they won't find each other. Check for spaces or hyphens. May have to delete duplicate worksheet from prior run")
+
+End If
+
+
 End Sub
 
 
-Sub TransferData(PivotTableWS As worksheet, ws As worksheet, name As Range)
+Sub TransferData(ws As Worksheet, name As Range)
 Dim looptimes As Integer
 Dim datatotransfer As Long
 Dim i As Integer
@@ -54,7 +76,7 @@ Dim indexnumber As Long
 Dim celltopasteto As Range
 
 
-    looptimes = loopvalues(PivotTableWS, ws, name)
+    looptimes = loopvalues(ws, name)
     'MsgBox ("The name is : " & name.Value & looptimes) 'and the code and hours are " & cell.Offset(0, 1).Value & " and " & cell.Offset(0, 2).Value)
 
     ' initialize all preexisting data to zero
@@ -73,62 +95,136 @@ Dim celltopasteto As Range
 End Sub
 
 
-Function loopvalues(PivotTableWS As worksheet, ws As worksheet, cell As Range)
+Function loopvalues(ws As Worksheet, cell As Range)
     Dim endrow As Integer
     Dim startrow As Integer
-    startrow = cell.Row
-    endrow = cell.End(xlDown).Row
-    loopvalues = endrow - startrow
+
+    If cell.Offset(1, 0).FormulaR1C1 <> "" Then
+        loopvalues = 1
+    Else
+    'need to debut where the xldown and up don't work, where two doctors with one line are squashed
+        startrow = cell.Row
+        endrow = cell.End(xlDown).Row
+        loopvalues = endrow - startrow
+    End If
 
 End Function
 
 
-Sub ZeroOut(ws As worksheet)
+Sub ZeroOut(ws As Worksheet)
 
 Dim cell As Range
 Dim LastRow As Long
 Dim rng As Range
-LastRow = ws.UsedRange.rows.count
+LastRow = ws.UsedRange.rows.Count
 Set rng = ws.Range("B1:B" & LastRow)
 
 If ws.name = "Summary" Or ws.Visible = False Then
-    GoTo Endd
+    GoTo endd
 End If
 
 For Each cell In rng
-    If IsNumeric(cell.Value) And cell.Value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
+    If IsNumeric(cell.value) And cell.value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
         cell.FormulaR1C1 = 0
     End If
 Next
 
-Endd:
+endd:
+End Sub
+Sub calldatavalidator()
+Call DataValidator(Application.ActiveSheet)
 End Sub
 
-''Not working yet but not called
-''Don't know how to work with Arrays and for each loops sufficiently
-Sub DataValidator(PT As worksheet)
+Sub DataValidator(PT As Worksheet)
+Dim RunningTotalHrs As Long
+Dim ws As Worksheet
+RunningTotalHrs = 0
+Dim PTTotal As Long
 
-Dim TotalPT As Long
-Dim ws As worksheet
-Dim RunningTotal As Long
-Dim wscount As Integer
-Dim WsTotalArray() As Long
-RunningTotal = 0
-Dim i As Integer
-i = 0
-WsTotalArray = 0
+PTTotal = PT.UsedRange.Find("Grand Total").Offset(0, 2).value
+PTTotal = PTTotal + PT.UsedRange.FindNext(PT.UsedRange.Find("Grand Total")).Offset(0, 2).value
 
-wscount = Application.Worksheets.count
+
 For Each ws In Application.ActiveWorkbook.Worksheets
-    If ws.name = "Summary" Or ws.Visible = False Then GoTo next1
-    WsTotalArray = WsTotalArray(ws) + ws.Range("B11").Value
+    If ws.name = "Summary" Or ws.name = PT.name Or ws.Visible = False Then GoTo next1
 
-
-
+    '' access colum b for getting values
+        'set used range of column b as range
+        Dim cell As Range
+        Dim LastRow As Integer
+        Dim rng As Range
+        LastRow = ws.UsedRange.rows.Count
+        Set rng = ws.Range("B1:B" & LastRow)
+        
+        
+        For Each cell In rng
+            If InStr(cell.FormulaR1C1, "=") <> 0 Then
+            RunningTotalHrs = RunningTotalHrs + cell.value
+            End If
+        Next
 next1:
 Next
 
+Difference = PTTotal - RunningTotalHrs
 
+Call doctorchecker
 
 
 End Sub
+
+Sub doctorchecker()
+Dim cell As Range
+CountMissed = 0
+Dim DoctorName As String
+    For Each cell In PT.UsedRange
+        If InStr(cell.value, ",") <> 0 And cell.Offset(0, 1).value <> "" Then
+            DoctorName = Mid(cell.value, InStr(cell.value, ",") + 2, 1) & ". " & Left(cell.value, InStr(cell.value, ",") - 1)
+            If Not WorksheetExists(DoctorName) Then
+                CountMissed = CountMissed + 1
+            End If
+        End If
+    Next
+End Sub
+
+Sub DoctorAdder()
+Dim cell As Range
+Dim DoctorName As String
+newsheets = 0
+Application.Worksheets("Template").Visible = True
+Set PT = Application.ActiveSheet
+    For Each cell In PT.UsedRange
+    
+        'check if a real name but not their totals (c. 50 instances)
+        If InStr(cell.value, ",") <> 0 And cell.Offset(0, 1).value <> "" Then
+            
+            ' record the name (50*15)
+            DoctorName = Mid(cell.value, InStr(cell.value, ",") + 2, 1) & ". " & Left(cell.value, InStr(cell.value, ",") - 1)
+        
+            ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
+            If Not WorksheetExists(DoctorName) Then
+                    ' copy template ws and rename to
+                    'Call CreateSheet(DoctorName)
+
+                    Application.Worksheets("Template").Copy After:=Sheets(Sheets.Count)
+                    Application.ActiveSheet.name = DoctorName
+                    Range("a2").Formula = DoctorName
+                    newsheets = newsheets + 1
+            End If
+        End If
+    Next
+Application.Worksheets("Template").Visible = False
+End Sub
+
+Function WorksheetExists(sName As String) As Boolean
+    WorksheetExists = Evaluate("ISREF('" & sName & "'!A1)")
+End Function
+
+Private Sub CreateSheet(wsname As String)
+    Dim ws As Worksheet
+    
+    Set ws = ThisWorkbook.Sheets.add(After:= _
+             ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+    ws.name = wsname
+End Sub
+
+
