@@ -5,8 +5,9 @@ Dim PT As Worksheet
 Dim bAnswer As Integer
 Dim CountMissed As Integer
 Dim newsheets As Integer
-Sub main()
+Dim AdHocTemplateStr As String
 
+Sub main()
 
 Application.EnableEvents = False
 Application.ScreenUpdating = False
@@ -55,7 +56,7 @@ If Difference = 0 Then
 Else
     'warn user
     If CountMissed > 0 Then
-        bAnswer = MsgBox("Done. Numbers don't tie out, off by " & Difference & " hours. It looks like not all new doctors were added. Would you like to add new worksheets from template for any and all new doctors? Re-run macro to get these populated and make sure no duplicates exist", vbYesNo)
+        bAnswer = MsgBox("Done. Numbers don't tie out, off by " & Difference & " hours. It looks like not all new doctors were added. Would you like to auto create new worksheets for missing providers (from hidden template) and re-run macro", vbYesNo)
         'ask if should add doctors
         If bAnswer = 6 Then
             Call DoctorAdder
@@ -63,7 +64,7 @@ Else
             GoTo Run:
         End If
     End If
-MsgBox ("Done. Numbers don't tie out, off by " & Difference & " hours. Data usually transfers well or not at all, so review all worksheets with zero values. The name of the doctor worksheet has to match the name in the pivot table with specific formatting or they won't find each other. Check for spaces or hyphens. May have to delete duplicate worksheet from prior run")
+MsgBox ("Done. Numbers still don't tie out, off by " & Difference & " hours. Most of this data should be good. Data usually transfers perfectly by doctor or not at all, so review all worksheets with zero values for failed transfer. Chcek for name peculiarities and discrepencies between pivot table and worksheet name. Check for spaces or hyphens. I can make this more dynamic in the future if given added criteria (error formatting types)")
 
 End If
 
@@ -76,7 +77,7 @@ Dim looptimes As Integer
 Dim datatotransfer As Long
 Dim i As Integer
 Dim indexnumber As Long
-Dim celltopasteto As Range
+Dim CellToPasteTo As Range
 
     looptimes = looptimesf(ws, cell)
   
@@ -84,8 +85,8 @@ Dim celltopasteto As Range
     For i = 0 To looptimes - 1
         indexnumber = cell.Offset(i, 1).FormulaR1C1
         datatotransfer = cell.Offset(i, 2).FormulaR1C1
-        Set celltopasteto = ws.UsedRange.Find(indexnumber).Offset(0, 1)
-        celltopasteto.FormulaR1C1 = datatotransfer
+        Set CellToPasteTo = ws.UsedRange.Find(indexnumber).Offset(0, 1)
+        CellToPasteTo.FormulaR1C1 = datatotransfer
     Next
 End Sub
 
@@ -171,13 +172,25 @@ Sub doctorchecker()
 Dim cell As Range
 CountMissed = 0
 Dim stdName As String, unhyphName As String, squishName As String
+Dim PT As Worksheet
+Set PT = Application.ActiveSheet
 
     For Each cell In PT.UsedRange
         If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then ' if it looks to be a bona fide nombre ==>
             Call GetNames(cell, stdName, unhyphName, squishName) ' Get various name forms
-            If Not WorksheetExists(stdName) Or Not WorksheetExists(unhyphName) Or Not WorksheetExists(squishName) Then
+            If Not WorksheetExists(stdName) And Not WorksheetExists(unhyphName) And Not WorksheetExists(squishName) Then
                 CountMissed = CountMissed + 1  ' might be doubled up due to double names on pivot, but shouldn't matter for our _
                 purposes here. We only need it to be > 0 to run switch
+            Else '' find which worksheet exists and make that the ad hoc template to copy new worksheets from (prevents errors from choosing a faulty non doctor worksheet as template by accident
+                If AdHocTemplateStr = "" Then
+                    If WorksheetExists(stdName) Then
+                        AdHocTemplateStr = stdName
+                    ElseIf WorksheetExists(squishName) Then
+                        AdHocTemplateStr = squishName
+                    Else: WorksheetExists (unhyphName)
+                        AdHocTemplateStr = unhyphName
+                    End If
+                End If
             End If
         End If
     Next
@@ -187,38 +200,54 @@ Sub DoctorAdder()
 Dim cell As Range
 Dim stdName As String, unhyphName As String, squishName As String ''have to check for all name varations to not duplicate ws
 newsheets = 0
+Dim bUseTemplate As Boolean
 If WorksheetExists("Template") Then
     Application.Worksheets("Template").Visible = True
-    Set PT = Application.ActiveSheet  ' Pivot has to be active sheet to run this code apparantly. Could make more dynamic
-        For Each cell In PT.UsedRange
-    
-        'check if a real name but not their totals (c. 50 instances)
-        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
-            
-            'stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
-            Call GetNames(cell, stdName, unhyphName, squishName)
-        
-        
-            ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
-            If Not WorksheetExists(stdName) Or Not WorksheetExists(unhyphName) Or Not WorksheetExists(squishName) Then
-                    ' copy template ws and rename to
-                    'Call CreateSheet(DoctorName)
+    bUseTemplate = True
+Else
+    bUseTemplate = False
+End If
 
-                    Application.Worksheets("Template").Copy After:=Sheets(Sheets.Count)
-                    Application.ActiveSheet.name = stdName
-                    Range("a2").Formula = stdName
-                    newsheets = newsheets + 1
+Set PT = Application.ActiveSheet  ' Pivot has to be active sheet to run this code apparantly. Could make more dynamic
+For Each cell In PT.UsedRange
+
+    'check if a real name but not their totals (c. 50 instances)
+    If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then ''bona fide names. TODO promote to funct (below)
+        
+        'stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
+        Call GetNames(cell, stdName, unhyphName, squishName)
+    
+        ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
+        If Not WorksheetExists(stdName) And Not WorksheetExists(unhyphName) And Not WorksheetExists(squishName) Then
+            ' copy template ws and rename to
+            'Call CreateSheet(DoctorName) ''functiont that doesn't exist or hasn't been tested yet
+            If bUseTemplate = True Then
+                Application.Worksheets("Template").Copy After:=Sheets(Sheets.Count)
+                Application.ActiveSheet.name = stdName
+                Range("a2").Formula = stdName
+                newsheets = newsheets + 1
+            Else
+                Application.Worksheets(AdHocTemplateStr).Copy After:=Sheets(Sheets.Count) '' random worksheet chosen, must guess right or error
+                '' TODO come up with protection in case no named template and wrong guess. Capture one is worksheet and save that
+                Application.ActiveSheet.name = stdName
+                Range("a2").Formula = stdName
+                newsheets = newsheets + 1
             End If
         End If
-    Next
-Application.Worksheets("Template").Visible = False
+    End If
+Next
+    If bUseTemplate = True Then '' cover our tracks
+    Application.Worksheets("Template").Visible = False
+    End If
 PT.Activate
 End Sub
 
 Function WorksheetExists(sName As String) As Boolean
+On Error Resume Next ''shouldn't need but just in case
     WorksheetExists = Evaluate("ISREF('" & sName & "'!A1)")
 End Function
 
+''not used yet. Maybe for future refactoring
 Private Sub CreateSheet(wsname As String)
     Dim ws As Worksheet
     
@@ -235,7 +264,7 @@ stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Valu
 If InStr(cell.Value, "-") Then
     unhyphName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, "-") - 1)
     Else
-    unhyphName = ""
+    unhyphName = "."
 End If
 
 squishName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & "." & Left(cell.Value, InStr(cell.Value, ",") - 1)
@@ -250,3 +279,4 @@ If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then ' if it lo
 Else
     bIsNameCell = False
 End Function
+
