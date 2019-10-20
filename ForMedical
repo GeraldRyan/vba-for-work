@@ -56,11 +56,11 @@ If Difference = 0 Then
 Else
     'warn user
     If CountMissed > 0 Then
-        bAnswer = MsgBox("Done. Numbers don't tie out, off by " & Difference & " hours. It looks like not all new doctors were added. Would you like to auto create new worksheets for missing providers (from hidden template) and re-run macro", vbYesNo)
+        bAnswer = MsgBox("Done. Numbers don't tie out, off by " & Difference & " hours. It looks like not all new doctors were added. Would you like to auto create new worksheets for missing providers?", vbYesNo)
         'ask if should add doctors
         If bAnswer = 6 Then
             Call DoctorAdder
-            MsgBox (newsheets & " new sheets added from template, set to zero.")
+            MsgBox (newsheets & " new sheets added from template and data updated. Note, summary tab not appended with new doctors")
             GoTo Run:
         End If
     End If
@@ -68,7 +68,8 @@ MsgBox ("Done. Numbers still don't tie out, off by " & Difference & " hours. Mos
 
 End If
 
-
+    Application.ScreenUpdating = True
+    Application.EnableEvents = True
 End Sub
 
 
