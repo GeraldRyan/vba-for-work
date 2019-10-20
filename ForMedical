@@ -9,33 +9,38 @@ Dim newsheets As Integer
 
 Sub main()
 
+
 Application.EnableEvents = False
 Application.ScreenUpdating = False
-
+Run:
 'declare variables
 Set PT = Application.ActiveSheet
 Dim ws As Worksheet
 Dim looptimes As Integer
 Dim cell As Range
-Dim ptlname As String
+Dim ptlname As String ' delete when finished refactoring
+Dim stdName As String, unhyphName As String, squishName As String
+Dim c As Integer
 
 ' initialize value to zero (This loop runs about 15 times)
 For Each ws In Application.ActiveWorkbook.Worksheets
     If ws.name = "Summary" Or ws.name = PT.name Or ws.Visible = False Then GoTo next1
     Call ZeroOut(ws)
-
+    c = 0
 
     For Each cell In PT.UsedRange
     
         'check if a real name but not their totals (c. 50 instances)
-        If InStr(cell.value, ",") <> 0 And cell.Offset(0, 1).value <> "" Then
+        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
             
-            ' record the name (50*15)
-            ptlname = Mid(cell.value, InStr(cell.value, ",") + 2, 1) & ". " & Left(cell.value, InStr(cell.value, ",") - 1)
+            '' capture the different name possibilities
+            Call GetNames(cell, stdName, unhyphName, squishName)
             
             ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
-            If ptlname = ws.name Then
+            If stdName = ws.name Or unhyphName = ws.name Or squishName = ws.name Then
+                c = c + 1
                 Call TransferData(ws, cell)
+                    If c = 2 Then GoTo next1: '' no need to keep searching worksheet if both instances of doctors (old and new) found
             End If
         End If
     Next
@@ -57,7 +62,8 @@ Else
         'ask if should add doctors
         If bAnswer = 6 Then
             Call DoctorAdder
-            MsgBox (newsheets & " new sheets added from template, set to zero. Remember to re-run the macro to populate them and see if there remains a difference")
+            MsgBox (newsheets & " new sheets added from template, set to zero.")
+            GoTo Run:
         End If
     End If
 MsgBox ("Done. Numbers don't tie out, off by " & Difference & " hours. Data usually transfers well or not at all, so review all worksheets with zero values. The name of the doctor worksheet has to match the name in the pivot table with specific formatting or they won't find each other. Check for spaces or hyphens. May have to delete duplicate worksheet from prior run")
@@ -68,44 +74,35 @@ End If
 End Sub
 
 
-Sub TransferData(ws As Worksheet, name As Range)
+Sub TransferData(ws As Worksheet, cell As Range)
 Dim looptimes As Integer
 Dim datatotransfer As Long
 Dim i As Integer
 Dim indexnumber As Long
 Dim celltopasteto As Range
 
-
-    looptimes = loopvalues(ws, name)
-    'MsgBox ("The name is : " & name.Value & looptimes) 'and the code and hours are " & cell.Offset(0, 1).Value & " and " & cell.Offset(0, 2).Value)
-
-    ' initialize all preexisting data to zero
-    
-
-
-
+    looptimes = looptimesf(ws, cell)
+  
     ' Transfer data looptimes times
     For i = 0 To looptimes - 1
-        indexnumber = name.Offset(i, 1).FormulaR1C1
-        datatotransfer = name.Offset(i, 2).FormulaR1C1
+        indexnumber = cell.Offset(i, 1).FormulaR1C1
+        datatotransfer = cell.Offset(i, 2).FormulaR1C1
         Set celltopasteto = ws.UsedRange.Find(indexnumber).Offset(0, 1)
         celltopasteto.FormulaR1C1 = datatotransfer
-               
     Next
 End Sub
 
-
-Function loopvalues(ws As Worksheet, cell As Range)
+Function looptimesf(ws As Worksheet, cell As Range)
     Dim endrow As Integer
     Dim startrow As Integer
 
     If cell.Offset(1, 0).FormulaR1C1 <> "" Then
-        loopvalues = 1
+        looptimesf = 1
     Else
     'need to debut where the xldown and up don't work, where two doctors with one line are squashed
         startrow = cell.Row
         endrow = cell.End(xlDown).Row
-        loopvalues = endrow - startrow
+        looptimesf = endrow - startrow
     End If
 
 End Function
@@ -124,7 +121,10 @@ If ws.name = "Summary" Or ws.Visible = False Then
 End If
 
 For Each cell In rng
-    If IsNumeric(cell.value) And cell.value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
+
+    
+    'If IsNumeric(cell.value) And cell.value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
+    If IsNumeric(cell.Value) And cell.Value <> "" And cell.Offset(0, 1).FormulaR1C1 <> "" And cell.Offset(0, -1).FormulaR1C1 <> "" Then '' changed the if to account for any hard coded = in the cells e.g. =4+5. Has happened, resulting in error at least in data validation
         cell.FormulaR1C1 = 0
     End If
 Next
@@ -141,8 +141,8 @@ Dim ws As Worksheet
 RunningTotalHrs = 0
 Dim PTTotal As Long
 
-PTTotal = PT.UsedRange.Find("Grand Total").Offset(0, 2).value
-PTTotal = PTTotal + PT.UsedRange.FindNext(PT.UsedRange.Find("Grand Total")).Offset(0, 2).value
+PTTotal = PT.UsedRange.Find("Grand Total").Offset(0, 2).Value
+PTTotal = PTTotal + PT.UsedRange.FindNext(PT.UsedRange.Find("Grand Total")).Offset(0, 2).Value
 
 
 For Each ws In Application.ActiveWorkbook.Worksheets
@@ -159,7 +159,7 @@ For Each ws In Application.ActiveWorkbook.Worksheets
         
         For Each cell In rng
             If InStr(cell.FormulaR1C1, "=") <> 0 Then
-            RunningTotalHrs = RunningTotalHrs + cell.value
+            RunningTotalHrs = RunningTotalHrs + cell.Value
             End If
         Next
 next1:
@@ -177,8 +177,8 @@ Dim cell As Range
 CountMissed = 0
 Dim DoctorName As String
     For Each cell In PT.UsedRange
-        If InStr(cell.value, ",") <> 0 And cell.Offset(0, 1).value <> "" Then
-            DoctorName = Mid(cell.value, InStr(cell.value, ",") + 2, 1) & ". " & Left(cell.value, InStr(cell.value, ",") - 1)
+        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
+            DoctorName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
             If Not WorksheetExists(DoctorName) Then
                 CountMissed = CountMissed + 1
             End If
@@ -195,10 +195,10 @@ Set PT = Application.ActiveSheet
     For Each cell In PT.UsedRange
     
         'check if a real name but not their totals (c. 50 instances)
-        If InStr(cell.value, ",") <> 0 And cell.Offset(0, 1).value <> "" Then
+        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
             
             ' record the name (50*15)
-            DoctorName = Mid(cell.value, InStr(cell.value, ",") + 2, 1) & ". " & Left(cell.value, InStr(cell.value, ",") - 1)
+            DoctorName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
         
             ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
             If Not WorksheetExists(DoctorName) Then
@@ -213,6 +213,7 @@ Set PT = Application.ActiveSheet
         End If
     Next
 Application.Worksheets("Template").Visible = False
+PT.Activate
 End Sub
 
 Function WorksheetExists(sName As String) As Boolean
@@ -228,3 +229,18 @@ Private Sub CreateSheet(wsname As String)
 End Sub
 
 
+Sub GetNames(ByVal cell As Range, ByRef stdName As String, ByRef unhyphName As String, ByRef squishName As String)
+
+stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
+
+If InStr(cell.Value, "-") Then
+    unhyphName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, "-") - 1)
+    Else
+    unhyphName = ""
+End If
+
+squishName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & "." & Left(cell.Value, InStr(cell.Value, ",") - 1)
+
+
+
+End Sub
