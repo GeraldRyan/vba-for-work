@@ -5,8 +5,6 @@ Dim PT As Worksheet
 Dim bAnswer As Integer
 Dim CountMissed As Integer
 Dim newsheets As Integer
-
-
 Sub main()
 
 
@@ -18,7 +16,6 @@ Set PT = Application.ActiveSheet
 Dim ws As Worksheet
 Dim looptimes As Integer
 Dim cell As Range
-Dim ptlname As String ' delete when finished refactoring
 Dim stdName As String, unhyphName As String, squishName As String
 Dim c As Integer
 
@@ -131,9 +128,6 @@ Next
 
 endd:
 End Sub
-Sub calldatavalidator()
-Call DataValidator(Application.ActiveSheet)
-End Sub
 
 Sub DataValidator(PT As Worksheet)
 Dim RunningTotalHrs As Long
@@ -167,20 +161,23 @@ Next
 
 Difference = PTTotal - RunningTotalHrs
 
-Call doctorchecker
-
+If Difference > 1 Then
+    Call doctorchecker
+End If
 
 End Sub
 
 Sub doctorchecker()
 Dim cell As Range
 CountMissed = 0
-Dim DoctorName As String
+Dim stdName As String, unhyphName As String, squishName As String
+
     For Each cell In PT.UsedRange
-        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
-            DoctorName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
-            If Not WorksheetExists(DoctorName) Then
-                CountMissed = CountMissed + 1
+        If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then ' if it looks to be a bona fide nombre ==>
+            Call GetNames(cell, stdName, unhyphName, squishName) ' Get various name forms
+            If Not WorksheetExists(stdName) Or Not WorksheetExists(unhyphName) Or Not WorksheetExists(squishName) Then
+                CountMissed = CountMissed + 1  ' might be doubled up due to double names on pivot, but shouldn't matter for our _
+                purposes here. We only need it to be > 0 to run switch
             End If
         End If
     Next
@@ -188,26 +185,28 @@ End Sub
 
 Sub DoctorAdder()
 Dim cell As Range
-Dim DoctorName As String
+Dim stdName As String, unhyphName As String, squishName As String ''have to check for all name varations to not duplicate ws
 newsheets = 0
-Application.Worksheets("Template").Visible = True
-Set PT = Application.ActiveSheet
-    For Each cell In PT.UsedRange
+If WorksheetExists("Template") Then
+    Application.Worksheets("Template").Visible = True
+    Set PT = Application.ActiveSheet  ' Pivot has to be active sheet to run this code apparantly. Could make more dynamic
+        For Each cell In PT.UsedRange
     
         'check if a real name but not their totals (c. 50 instances)
         If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
             
-            ' record the name (50*15)
-            DoctorName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
+            'stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
+            Call GetNames(cell, stdName, unhyphName, squishName)
+        
         
             ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
-            If Not WorksheetExists(DoctorName) Then
+            If Not WorksheetExists(stdName) Or Not WorksheetExists(unhyphName) Or Not WorksheetExists(squishName) Then
                     ' copy template ws and rename to
                     'Call CreateSheet(DoctorName)
 
                     Application.Worksheets("Template").Copy After:=Sheets(Sheets.Count)
-                    Application.ActiveSheet.name = DoctorName
-                    Range("a2").Formula = DoctorName
+                    Application.ActiveSheet.name = stdName
+                    Range("a2").Formula = stdName
                     newsheets = newsheets + 1
             End If
         End If
@@ -229,7 +228,7 @@ Private Sub CreateSheet(wsname As String)
 End Sub
 
 
-Sub GetNames(ByVal cell As Range, ByRef stdName As String, ByRef unhyphName As String, ByRef squishName As String)
+Sub GetNames(ByVal cell As Range, ByRef stdName As String, Optional ByRef unhyphName As String, Optional ByRef squishName As String)
 
 stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
 
@@ -241,6 +240,13 @@ End If
 
 squishName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & "." & Left(cell.Value, InStr(cell.Value, ",") - 1)
 
-
-
 End Sub
+
+''function not currently being used but could replace messier code upstairs.
+
+Function bIsNameCell(ByVal cell As Range)
+If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then ' if it looks to be a bona fide nombre ==>
+    bIsNameCell = True
+Else
+    bIsNameCell = False
+End Function
