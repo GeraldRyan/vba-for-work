@@ -42,7 +42,7 @@ Public Sub ExportVisualBasicCode()
         path = directory & "\" & VBComponent.name & extension
         Call VBComponent.Export(path)
         
-        If Err.Number <> 0 Then
+        If Err.number <> 0 Then
             Call MsgBox("Failed to export " & VBComponent.name & " to " & path, vbCritical)
         Else
             count = count + 1

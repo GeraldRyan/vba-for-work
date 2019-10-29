@@ -15,7 +15,11 @@ Next
 End Sub
 
 
+Sub ParenthesesWithNegativePercent()
 
+
+Application.Selection.NumberFormat = "0.0%;(0.0%)"
+End Sub
 
 
 

@@ -1,10 +1,10 @@
 Attribute VB_Name = "RegularNames"
 Sub RegularNames()
-Dim Rng As Range, cell As Range
+Dim rng As Range, cell As Range
 Dim T
-    Set Rng = Selection
+    Set rng = Selection
     On Error Resume Next
-    For Each cell In Rng
+    For Each cell In rng
         T = Split(cell, ",")
         cell = Trim(T(1)) & " " & Trim(T(0))
     Next cell

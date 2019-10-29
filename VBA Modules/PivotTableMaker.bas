@@ -190,7 +190,7 @@ Dim LastCol As Long
 On Error Resume Next
 Set DSheet = Application.ActiveSheet
 Application.DisplayAlerts = False
-Sheets.Add After:=Application.ActiveSheet
+Sheets.add After:=Application.ActiveSheet
 Application.ActiveSheet.name = "PivotTable"
 Application.DisplayAlerts = True
 Set PSheet = Worksheets("PivotTable")
@@ -331,7 +331,7 @@ Sub FormatCellsROG()
 '' Adds conditional formatting for cells based on value differentials
 
     '' sets red shade RED text if less than -5
-    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, _
+    Selection.FormatConditions.add Type:=xlCellValue, Operator:=xlLess, _
         Formula1:="=-5"
     Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
@@ -346,7 +346,7 @@ Sub FormatCellsROG()
     Selection.FormatConditions(1).StopIfTrue = False
     
     '' sets ORANGE shade and red text if between -5 and -.51
-    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlBetween, _
+    Selection.FormatConditions.add Type:=xlCellValue, Operator:=xlBetween, _
         Formula1:="=-5", Formula2:="=-.51"
     Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
@@ -362,7 +362,7 @@ Sub FormatCellsROG()
     
     
     '' sets GREEN shade and black text if greater than 0
-    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, _
+    Selection.FormatConditions.add Type:=xlCellValue, Operator:=xlGreater, _
         Formula1:="=0"
     Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
@@ -381,7 +381,7 @@ End Sub
 Sub BlankYellow()
 Dim cell As Range
     For Each cell In Selection
-    cell.FormatConditions.Add Type:=xlExpression, Formula1:= _
+    cell.FormatConditions.add Type:=xlExpression, Formula1:= _
         "=LEN(TRIM(" & cell.Address & "))=0"
     cell.FormatConditions(cell.FormatConditions.count).SetFirstPriority
     With cell.FormatConditions(1).Interior

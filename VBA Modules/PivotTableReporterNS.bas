@@ -10,9 +10,10 @@ Dim ClientName As String
 Dim SaveSettingsFile As String
 ClientName = Range("C10").FormulaR1C1
 Dim BillPeriod As String
+Dim bRunDV As Boolean
 
-On Error GoTo ErrorHandler:
-BillPeriod = Right(Range("A4").FormulaR1C1, Len(Range("A4").FormulaR1C1) - 5)
+'On Error GoTo ErrorHandler:
+BillPeriod = Right(Application.Worksheets("Report").Range("A4").FormulaR1C1, Len(Application.Worksheets("Report").Range("A4").FormulaR1C1) - 5)
 Dim DirToSave As String
 'DirToSave = MyDocsPath & "\Documents\" & "EngagementTimeReports\"
 Dim FileNameToSaveAs As String
@@ -20,23 +21,36 @@ FileNameToSaveAs = ClientName & BillPeriod
 Application.EnableEvents = False
 SaveSettingsFile = MyDocsPath() & "\Documents\" & "SaveSettings.txt"
 Dim ReportWSName$
-ReportWSName = Application.ActiveSheet.name
+ReportWSName = "Report"
 Dim PTFormat As String
 PTFormat = "PTFormat"
+Application.ScreenUpdating = False
+Dim bAskUser As Integer
 
 'make sure pivot table sheet doesn't already exist
 If WorksheetExists("PivotTable") Then
-MsgBox ("Pivot Table already exists. Delete Worksheet and re-run")
-Exit Sub
+    bAskUser = MsgBox("Pivot Table already exists. Do you want to refresh with a changed table?", vbQuestion + vbYesNo, "Would you like to update table?")
+'    Else: bReplacePivot = False
+'    End If
+    'bReplacePivot = MsgBox("Pivot Table already exists. Do you want to refresh with a changed table?", vbQuestion + vbYesNo, "Would you like to update table?")
+    If bAskUser = 6 Then Application.Worksheets("PivotTable").Delete '6 represents yes in VBA
+    If bAskUser = 7 Then GoTo endd: '7 represents no in VBA
 End If
 
-Application.ScreenUpdating = False
+'make sure pivot table sheet doesn't already exist
+If WorksheetExists("PTFormat") Then
+    bRunDV = False
+    Worksheets("PTFormat").Activate
+    Range("A1").Select
 
-'format the data to be able to make the pivot table
-FormatTable
+Else:
+    'format the data to be able to make the pivot table
+    FormatTable
+    bRunDV = True
+End If
 
 'validate data (that the report didn't clip any hours off)
-Call DataValidator(ReportWSName, PTFormat)
+Call DataValidator(ReportWSName, PTFormat, bRunDV)
 
 ' make the pivot table on a second worksheet
 MakePivot
@@ -44,34 +58,30 @@ MakePivot
 ' add the users custom cells to the pivot on that worksheet
 AddUsercells
 
-'Save the Workbook in selected directory
-'TODO Get this working
-'SaveWorkbook (ClientName)
-
 Application.ScreenUpdating = True
 
 ' Create directory and save
 
     'check if chosen save directory exists, else make for persistence
     If Not FileExists(SaveSettingsFile) Then
-    DirToSave = GetPermSaveFolder
-    Call MakeSaveSettingsFile(DirToSave, SaveSettingsFile)
+        DirToSave = GetPermSaveFolder
+        Call MakeSaveSettingsFile(DirToSave, SaveSettingsFile)
     Else
-    DirToSave = ReadSaveLocation(SaveSettingsFile)
+        DirToSave = ReadSaveLocation(SaveSettingsFile)
     End If
 
-' save workbook automatically
+' save workbook automatically in one time chosen directory
 Call SaveWorkbook(DirToSave, FileNameToSaveAs)
 
 Application.EnableEvents = True
 
 'wish them well
+endd:
 mymessage
 Exit Sub
 ErrorHandler:
-MsgBox "Be sure the report worksheet is selected"
+MsgBox "Unknown error. Delete all but first tab and try again"
 End Sub
-
 
 
 Sub FormatTable()
@@ -94,16 +104,11 @@ ReportWSName = Application.ActiveSheet.name
 Dim PTFormat As String
 PTFormat = "PTFormat"
 
-'make sure pivot table sheet doesn't already exist
-If Not WorksheetExists("PTFormat") Then
-    Application.ActiveSheet.Copy After:=Application.ActiveSheet
-    Application.ActiveSheet.name = PTFormat
-    Worksheets("PTFormat").Activate
-Else:
-    Worksheets("PTFormat").Activate
 
-Exit Sub
-End If
+Application.ActiveSheet.Copy After:=Application.ActiveSheet
+Application.ActiveSheet.name = PTFormat
+Worksheets("PTFormat").Activate
+
 
 Dim GrandTotalHoursReport As Long
 Dim GrandTotalHoursPT As Long
@@ -207,6 +212,7 @@ For i = 1 To mycount
     'ActiveCell.Offset(1).Select
 LastIteration:
 Next i
+Range("a1:d1").EntireColumn.AutoFit
 Range("A1").Select
 
 End Sub
@@ -229,7 +235,7 @@ Dim LastCol As Long
 On Error Resume Next
 Set DSheet = Application.ActiveSheet
 Application.DisplayAlerts = False
-Sheets.Add After:=Application.ActiveSheet
+Sheets.add After:=Application.ActiveSheet
 Application.ActiveSheet.name = "PivotTable"
 Application.DisplayAlerts = True
 Set PSheet = Worksheets("PivotTable")
@@ -370,7 +376,7 @@ Sub FormatCellsROG()
 '' Adds conditional formatting for cells based on value differentials
 
     '' sets red shade RED text if less than -5
-    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, _
+    Selection.FormatConditions.add Type:=xlCellValue, Operator:=xlLess, _
         Formula1:="=-5"
     Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
@@ -385,7 +391,7 @@ Sub FormatCellsROG()
     Selection.FormatConditions(1).StopIfTrue = False
     
     '' sets ORANGE shade and red text if between -5 and -.51
-    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlBetween, _
+    Selection.FormatConditions.add Type:=xlCellValue, Operator:=xlBetween, _
         Formula1:="=-5", Formula2:="=-.51"
     Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
@@ -401,7 +407,7 @@ Sub FormatCellsROG()
     
     
     '' sets GREEN shade and black text if greater than 0
-    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, _
+    Selection.FormatConditions.add Type:=xlCellValue, Operator:=xlGreater, _
         Formula1:="=0"
     Selection.FormatConditions(Selection.FormatConditions.count).SetFirstPriority
     With Selection.FormatConditions(1).Font
@@ -420,7 +426,7 @@ End Sub
 Sub BlankYellow()
 Dim cell As Range
     For Each cell In Selection
-    cell.FormatConditions.Add Type:=xlExpression, Formula1:= _
+    cell.FormatConditions.add Type:=xlExpression, Formula1:= _
         "=LEN(TRIM(" & cell.Address & "))=0"
     cell.FormatConditions(cell.FormatConditions.count).SetFirstPriority
     With cell.FormatConditions(1).Interior
@@ -445,15 +451,18 @@ Dim strFolderExists As String
 
 End Sub
 
-Sub DataValidator(ReportName As String, PTData As String)
+Sub DataValidator(ReportName As String, PTData As String, bRun As Boolean)
 
 Dim rng1 As Range
 Dim rng2 As Range
 Dim GT1 As Single
 Dim GT2 As Single
-Set rng1 = Application.ActiveSheet.UsedRange
 Dim rng3 As Range
 
+If Not bRun = True Then GoTo EndSubb
+
+
+Set rng1 = Application.ActiveSheet.UsedRange
 Set rng3 = rng1.Find("Grand Totals").Offset(0, 2)
 GT1 = rng3.Value
 Set rng2 = Application.Worksheets(ReportName).UsedRange
@@ -467,6 +476,8 @@ If GT1 - GT2 <> 0 Then
 End If
 
 Range("A1").Select
+
+EndSubb:
 End Sub
 
 Sub MakeSaveSettingsFile(DirToRecord As String, FileToRecordTo As String)
@@ -517,5 +528,9 @@ End Function
 
 
 
+Sub CallColumnWidthAutoFit(rng As Range)
+'autofit the columns of the selection
+rng.EntireColumn.AutoFit
 
+End Sub
 

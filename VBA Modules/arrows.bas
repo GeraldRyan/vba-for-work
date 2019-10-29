@@ -205,24 +205,24 @@ ErrorHandler:
 MsgBox ("Sorry, value is not valid.")
 End Sub
 Sub highlightMaxValue()
-Dim Rng As Range
-For Each Rng In Selection
-If Rng = WorksheetFunction.Max(Selection) Then
-Rng.Style = "Good"
+Dim rng As Range
+For Each rng In Selection
+If rng = WorksheetFunction.Max(Selection) Then
+rng.Style = "Good"
 End If
-Next Rng
+Next rng
 End Sub
 
 Sub highlightMinValue()
 
 
 
-Dim Rng As Range
-    For Each Rng In Selection
-        If Rng = WorksheetFunction.Min(Selection) Then
-        Rng.Style = "Good"
+Dim rng As Range
+    For Each rng In Selection
+        If rng = WorksheetFunction.Min(Selection) Then
+        rng.Style = "Good"
         End If
-    Next Rng
+    Next rng
 
 End Sub
 

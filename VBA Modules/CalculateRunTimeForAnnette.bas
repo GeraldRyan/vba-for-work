@@ -1,7 +1,16 @@
-Attribute VB_Name = "AnnettesMedicalMacro"
+Attribute VB_Name = "CalculateRunTimeForAnnette"
 Option Explicit
 
-Sub main()
+Sub CalculateRunTime_Seconds()
+'PURPOSE: Determine how many seconds it took for code to completely run
+'SOURCE: www.TheSpreadsheetGuru.com/the-code-vault
+
+Dim StartTime As Double
+Dim SecondsElapsed As Double
+
+'Remember time when macro starts
+  StartTime = Timer
+
 
 Application.EnableEvents = False
 Application.ScreenUpdating = False
@@ -14,37 +23,41 @@ Dim looptimes As Integer
 Dim cell As Range
 Dim ptlname As String
 
-
+' initialize value to zero (This loop runs about 15 times)
 For Each ws In Application.ActiveWorkbook.Worksheets
-    If ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then
-        GoTo next1
-    End If
-    
-    ' initialize value to zero
-    For Each cell In ws.Range("B:B")
-        If IsNumeric(cell.Value) And cell.Value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
-            cell.FormulaR1C1 = 0
-        End If
-    Next
-    
+    If ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then GoTo next1
+    Call ZeroOut(ws)
+
+
     For Each cell In PivotTableWS.UsedRange
     
-        'check if a real name but not their totals
+        'check if a real name but not their totals (c. 50 instances)
         If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then
+            
+            ' record the name (50*15)
             ptlname = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
             
-            ' should call once for each WS to populate, 15-20 times PER CELL IN ACTIVE RANGE. TOO MUCH CALLING
+            ' should call once for each WS to populate, 15-20 times per real names in pivot table (c.50)
             If ptlname = ws.name Then
                 Call TransferData(PivotTableWS, ws, cell)
             End If
         End If
     Next
+
+
 next1:
 Next
+    
+
 Application.EnableEvents = True
 Application.ScreenUpdating = True
 
 MsgBox ("Have a nice day")
+'Determine how many seconds code took to run
+  SecondsElapsed = Round(Timer - StartTime, 2)
+
+'Notify user in seconds
+  MsgBox "This code ran successfully in " & SecondsElapsed & " seconds", vbInformation
 End Sub
 
 
@@ -86,26 +99,24 @@ End Function
 
 
 Sub ZeroOut(ws As Worksheet)
-Application.ScreenUpdating = False
-Application.EnableEvents = False
 
-Dim PivotTableWS As Worksheet
 Dim cell As Range
+Dim LastRow As Long
+Dim rng As Range
+LastRow = ws.UsedRange.rows.count
+Set rng = ws.Range("B1:B" & LastRow)
 
-
-If Not ws.name = "Summary" Or ws.name = PivotTableWS.name Or ws.Visible = False Then
+If ws.name = "Summary" Or ws.Visible = False Then
     GoTo endd
 End If
 
-For Each cell In ws.Range("B:B")
+For Each cell In rng
     If IsNumeric(cell.Value) And cell.Value <> "" And InStr(cell.FormulaR1C1, "=") = 0 Then
         cell.FormulaR1C1 = 0
     End If
 Next
 
 
-Application.ScreenUpdating = True
-Application.EnableEvents = True
 
 endd:
 End Sub

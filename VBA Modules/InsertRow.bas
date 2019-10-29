@@ -3,12 +3,11 @@ Sub insertrow()
 '
 ' insertrow Macro
 '
+Selection.Insert Shift:=xlDown
 
-Dim MySelection As Range
-Dim RowToAdd As Range
-
-    Set MySelection = Selection
-    Set RowToAdd = MySelection.rows.EntireRow
-    Selection.Insert Shift:=xlDown
-
+'    If Selection.rows.Count > 1 Then
+'        Selection.Insert Shift:=xlRight
+'    Else
+'        Selection.Insert Shift:=xlDown
+'    End If
 End Sub

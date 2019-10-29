@@ -1,6 +1,6 @@
 Attribute VB_Name = "Functions"
-Public Function Add(n1 As Double, n2 As Double)
-Add = n1 + n2
+Public Function add(n1 As Double, n2 As Double)
+add = n1 + n2
 End Function
 
 Public Function Percent(n1 As Double, n2 As Double)
@@ -8,8 +8,8 @@ Percent = (n1 - n2) / n2
 End Function
 
 
-Public Function difference(n1 As Double, n2 As Double)
-difference = (n2 - n1)
+Public Function Difference(n1 As Double, n2 As Double)
+Difference = (n2 - n1)
 End Function
 
 

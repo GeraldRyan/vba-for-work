@@ -1,10 +1,10 @@
 Attribute VB_Name = "PopulateEmptiesFromAboveValue"
 Sub PopulateEmptyCellsWithValueDirectlyAbove()
-Dim Rng As Range
-Set Rng = Selection
+Dim rng As Range
+Set rng = Selection
 
 
-For Each cell In Rng
+For Each cell In rng
     If cell = "" And cell.Offset(0, 1) <> "" Then
     '' copy and paste the value above
         cell.Offset(-1, 0).Select

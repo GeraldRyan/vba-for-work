@@ -27,3 +27,16 @@ Dim ColumnsToDelete As Range
 End Sub
  
 
+Sub DeleteJustRows()
+'
+' DeleteRow Macro
+'
+' Deletes rows in a selection.
+' Warning, Be careful not to delete good data as there is no undo button
+
+Application.EnableEvents = False
+Selection.rows.EntireRow.Delete
+Application.EnableEvents = True
+
+
+End Sub
