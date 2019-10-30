@@ -6,9 +6,9 @@ Sub PivotTableMaker()
 
 Dim ClientName As String
 Dim SaveSettingsFile As String
-ClientName = Range("C10").FormulaR1C1
+ClientName = range("C10").FormulaR1C1
 Dim BillPeriod As String
-BillPeriod = Right(Range("A4").FormulaR1C1, Len(Range("A4").FormulaR1C1) - 5)
+BillPeriod = Right(range("A4").FormulaR1C1, Len(range("A4").FormulaR1C1) - 5)
 Dim DirToSave As String
 DirToSave = MyDocsPath & "\Documents\" & "EngagementTimeReports\"
 Dim FileNameToSaveAs As String
@@ -78,7 +78,7 @@ Dim rangetosum As String
 
 'make sure pivot table sheet doesn't already exist
 If Not WorksheetExists("PTFormat") Then
-    Application.ActiveSheet.Copy After:=Application.ActiveSheet
+    Application.ActiveSheet.Copy after:=Application.ActiveSheet
     Application.ActiveSheet.name = PTFormat
     Worksheets("PTFormat").Activate
 Else:
@@ -91,22 +91,22 @@ Dim GrandTotalHoursPT As Long
 
 
 Dim i As Integer
-Dim First As Range
-Set First = Range("A2")
-Dim LastCell As Range
+Dim First As range
+Set First = range("A2")
+Dim LastCell As range
 Set LastCell = Application.ActiveSheet.Cells.SpecialCells(xlCellTypeLastCell)
 
 
 ' delete easy first Rs and Cs
-Range("A1:A5").EntireRow.Delete
-Range("B:D,G:H").Delete
+range("A1:A5").EntireRow.Delete
+range("B:D,G:H").Delete
 
 ' prepare loops
 Set LastCell = LastCell.End(xlToLeft)
 Set LastCell = LastCell.End(xlToLeft)
 Set LastCell = LastCell.End(xlToLeft)
-Set First = Range("A2")
-mycount = Range(First, LastCell).Cells.count
+Set First = range("A2")
+mycount = range(First, LastCell).Cells.count
 First.Select
 'GoTo tempstart
 
@@ -146,7 +146,7 @@ First.Select
 
 tempstart:
 For i = 1 To mycount
-    If ActiveCell.Row > LastCell.Row Then
+    If ActiveCell.row > LastCell.row Then
     GoTo NextIteration
     End If
     
@@ -168,7 +168,7 @@ Again:
     ActiveCell.Offset(1).Select
 NextIteration:
 Next i
-Range("A1").Select
+range("A1").Select
 
 End Sub
 
@@ -182,7 +182,7 @@ Dim PSheet As Worksheet
 Dim DSheet As Worksheet
 Dim PCache As PivotCache
 Dim PTable As PivotTable
-Dim PRange As Range
+Dim PRange As range
 Dim LastRow As Long
 Dim LastCol As Long
 
@@ -190,14 +190,14 @@ Dim LastCol As Long
 On Error Resume Next
 Set DSheet = Application.ActiveSheet
 Application.DisplayAlerts = False
-Sheets.add After:=Application.ActiveSheet
+Sheets.add after:=Application.ActiveSheet
 Application.ActiveSheet.name = "PivotTable"
 Application.DisplayAlerts = True
 Set PSheet = Worksheets("PivotTable")
 'Set DSheet = Worksheets("Report")
 
 'Define Data Range
-LastRow = DSheet.Cells(rows.count, 1).End(xlUp).Row
+LastRow = DSheet.Cells(rows.count, 1).End(xlUp).row
 LastCol = DSheet.Cells(1, Columns.count).End(xlToLeft).Column
 Set PRange = DSheet.Cells(1, 1).Resize(LastRow - 1, LastCol)
 
@@ -254,11 +254,11 @@ MyArray(2) = "Budget to Actual"
 MyArray(3) = "PY to CY"
 Dim i As Integer
 
-Application.ActiveSheet.Range("A1").Select
+Application.ActiveSheet.range("A1").Select
 Selection.End(xlDown).End(xlDown).Select
-LRowNum = ActiveCell.Row
+LRowNum = ActiveCell.row
 Selection.End(xlUp).Select
-FRowNum = ActiveCell.Row
+FRowNum = ActiveCell.row
 TimesToDo = LRowNum - FRowNum - 2
 ActiveCell.Offset(1, 1).Select
 ActiveCell.End(xlToRight).Select
@@ -272,7 +272,7 @@ Next i
 
 'shade yeller
 ActiveCell.Offset(1, -4).Select
-ActiveCell.Range("A1:B" & CStr(TimesToDo)).Select
+ActiveCell.range("A1:B" & CStr(TimesToDo)).Select
 ''TODO make conditional yellow
 BlankYellow
 'Selection.Interior.Color = 65535
@@ -290,12 +290,12 @@ For i = 0 To TimesToDo
      Selection.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""??_);_(@_)"
     '' todo make conditional red, green, orange
     FormatCellsROG
-     ActiveCell.Offset(1, -1).Range("A1").Select
+     ActiveCell.Offset(1, -1).range("A1").Select
 Next i
 Selection.Offset(-1, -2).Select
 For i = 0 To 1
     ActiveCell.Formula = "=SUM(R[-" & CStr(TimesToDo) & "]C:R[-1]C)"
-    ActiveCell.Offset(0, 1).Range("A1").Select
+    ActiveCell.Offset(0, 1).range("A1").Select
 Next i
 
 End Sub
@@ -379,7 +379,7 @@ Sub FormatCellsROG()
 End Sub
 
 Sub BlankYellow()
-Dim cell As Range
+Dim cell As range
     For Each cell In Selection
     cell.FormatConditions.add Type:=xlExpression, Formula1:= _
         "=LEN(TRIM(" & cell.Address & "))=0"
@@ -408,12 +408,12 @@ End Sub
 
 Sub DataValidator(ReportName As String, PTData As String)
 
-Dim rng1 As Range
-Dim rng2 As Range
+Dim rng1 As range
+Dim rng2 As range
 Dim GT1 As Single
 Dim GT2 As Single
 Set rng1 = Application.ActiveSheet.UsedRange
-Dim rng3 As Range
+Dim rng3 As range
 
 
 
@@ -427,7 +427,7 @@ If GT1 - GT2 <> 0 Then
 End If
 
 Worksheets(PTData).Activate
-Range("A1").Select
+range("A1").Select
 End Sub
 
 Sub MakeSaveSettingsFile(DirToRecord As String, FileToRecordTo As String)

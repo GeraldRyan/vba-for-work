@@ -31,14 +31,14 @@ End Sub
 
 Sub Concatenate_Formula(bConcat As Boolean, bOptions As Boolean)
 
-Dim rselected As Range
-Dim c As Range
+Dim rselected As range
+Dim c As range
 Dim sArgs As String
 Dim bCol As Boolean
 Dim bRow As Boolean
 Dim sArgSep As String
 Dim sSeparator As String
-Dim rOutput As Range
+Dim rOutput As range
 Dim vbAnswer As VbMsgBoxResult
 Dim lTrim As Long
 Dim sTitle As String

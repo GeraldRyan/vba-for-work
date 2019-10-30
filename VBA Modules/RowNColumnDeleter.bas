@@ -10,9 +10,9 @@ Sub RowNColumnDeleter()
 '
 
 
-Dim MySelection As Range
-Dim RowsToDelete As Range
-Dim ColumnsToDelete As Range
+Dim MySelection As range
+Dim RowsToDelete As range
+Dim ColumnsToDelete As range
 
     Set MySelection = Selection
     If MySelection.Columns.count = 1 Then

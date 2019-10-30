@@ -4,7 +4,7 @@ Attribute VB_Name = "Extractor"
 Public Sub ExportVisualBasicCode()
     Const Module = 1
     Const ClassModule = 2
-    Const Form = 3
+    Const form = 3
     Const Document = 100
     Const Padding = 24
     
@@ -27,7 +27,7 @@ Public Sub ExportVisualBasicCode()
         Select Case VBComponent.Type
             Case ClassModule, Document
                 extension = ".cls"
-            Case Form
+            Case form
                 extension = ".frm"
             Case Module
                 extension = ".bas"

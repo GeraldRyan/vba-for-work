@@ -12,12 +12,12 @@ Sub main()
 
 Application.EnableEvents = False
 Application.ScreenUpdating = False
-Run:
+run:
 'declare variables
 Set PT = Application.ActiveSheet
 Dim ws As Worksheet
 Dim looptimes As Integer
-Dim cell As Range
+Dim cell As range
 Dim stdName As String, unhyphName As String, squishName As String
 Dim c As Integer
 
@@ -62,7 +62,7 @@ Else
         If bAnswer = 6 Then
             Call DoctorAdder
             MsgBox (newsheets & " new sheets added from template and data updated. Note, summary tab not appended with new doctors")
-            GoTo Run:
+            GoTo run:
         End If
     End If
 MsgBox ("Done. Numbers still don't tie out, off by " & Difference & " hours. Most of this data should be good. Data usually transfers perfectly by doctor or not at all, so review all worksheets with zero values for failed transfer. Chcek for name peculiarities and discrepencies between pivot table and worksheet name. Check for spaces or hyphens. I can make this more dynamic in the future if given added criteria (error formatting types)")
@@ -74,12 +74,12 @@ End If
 End Sub
 
 
-Sub TransferData(ws As Worksheet, cell As Range)
+Sub TransferData(ws As Worksheet, cell As range)
 Dim looptimes As Integer
 Dim datatotransfer As Long
 Dim i As Integer
 Dim indexnumber As Long
-Dim CellToPasteTo As Range
+Dim CellToPasteTo As range
 
     looptimes = looptimesf(ws, cell)
   
@@ -92,7 +92,7 @@ Dim CellToPasteTo As Range
     Next
 End Sub
 
-Function looptimesf(ws As Worksheet, cell As Range)
+Function looptimesf(ws As Worksheet, cell As range)
     Dim endrow As Integer
     Dim startrow As Integer
 
@@ -100,8 +100,8 @@ Function looptimesf(ws As Worksheet, cell As Range)
         looptimesf = 1
     Else
     'need to debut where the xldown and up don't work, where two doctors with one line are squashed
-        startrow = cell.Row
-        endrow = cell.End(xlDown).Row
+        startrow = cell.row
+        endrow = cell.End(xlDown).row
         looptimesf = endrow - startrow
     End If
 
@@ -110,11 +110,11 @@ End Function
 
 Sub ZeroOut(ws As Worksheet)
 
-Dim cell As Range
+Dim cell As range
 Dim LastRow As Long
-Dim rng As Range
+Dim rng As range
 LastRow = ws.UsedRange.rows.count
-Set rng = ws.Range("B1:B" & LastRow)
+Set rng = ws.range("B1:B" & LastRow)
 
 If ws.name = "Summary" Or ws.Visible = False Then
     GoTo endd
@@ -147,11 +147,11 @@ For Each ws In Application.ActiveWorkbook.Worksheets
 
     '' access colum b for getting values
         'set used range of column b as range
-        Dim cell As Range
+        Dim cell As range
         Dim LastRow As Integer
-        Dim rng As Range
+        Dim rng As range
         LastRow = ws.UsedRange.rows.count
-        Set rng = ws.Range("B1:B" & LastRow)
+        Set rng = ws.range("B1:B" & LastRow)
         
         
         For Each cell In rng
@@ -171,7 +171,7 @@ End If
 End Sub
 
 Sub doctorchecker()
-Dim cell As Range
+Dim cell As range
 CountMissed = 0
 Dim stdName As String, unhyphName As String, squishName As String
 Dim PT As Worksheet
@@ -199,7 +199,7 @@ Set PT = Application.ActiveSheet
 End Sub
 
 Sub DoctorAdder()
-Dim cell As Range
+Dim cell As range
 Dim stdName As String, unhyphName As String, squishName As String ''have to check for all name varations to not duplicate ws
 newsheets = 0
 Dim bUseTemplate As Boolean
@@ -224,15 +224,15 @@ For Each cell In PT.UsedRange
             ' copy template ws and rename to
             'Call CreateSheet(DoctorName) ''functiont that doesn't exist or hasn't been tested yet
             If bUseTemplate = True Then
-                Application.Worksheets("Template").Copy After:=Sheets(Sheets.count)
+                Application.Worksheets("Template").Copy after:=Sheets(Sheets.count)
                 Application.ActiveSheet.name = stdName
-                Range("a2").Formula = stdName
+                range("a2").Formula = stdName
                 newsheets = newsheets + 1
             Else
-                Application.Worksheets(AdHocTemplateStr).Copy After:=Sheets(Sheets.count) '' random worksheet chosen, must guess right or error
+                Application.Worksheets(AdHocTemplateStr).Copy after:=Sheets(Sheets.count) '' random worksheet chosen, must guess right or error
                 '' TODO come up with protection in case no named template and wrong guess. Capture one is worksheet and save that
                 Application.ActiveSheet.name = stdName
-                Range("a2").Formula = stdName
+                range("a2").Formula = stdName
                 newsheets = newsheets + 1
             End If
         End If
@@ -253,13 +253,13 @@ End Function
 Private Sub CreateSheet(wsname As String)
     Dim ws As Worksheet
     
-    Set ws = ThisWorkbook.Sheets.add(After:= _
+    Set ws = ThisWorkbook.Sheets.add(after:= _
              ThisWorkbook.Sheets(ThisWorkbook.Sheets.count))
     ws.name = wsname
 End Sub
 
 
-Sub GetNames(ByVal cell As Range, ByRef stdName As String, Optional ByRef unhyphName As String, Optional ByRef squishName As String)
+Sub GetNames(ByVal cell As range, ByRef stdName As String, Optional ByRef unhyphName As String, Optional ByRef squishName As String)
 
 stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
 
@@ -275,7 +275,7 @@ End Sub
 
 ''function not currently being used but could replace messier code upstairs.
 
-Function bIsNameCell(ByVal cell As Range)
+Function bIsNameCell(ByVal cell As range)
 If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then ' if it looks to be a bona fide nombre ==>
     bIsNameCell = True
 Else

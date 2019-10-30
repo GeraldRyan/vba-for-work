@@ -1,6 +1,6 @@
 Attribute VB_Name = "CFormatting"
 Sub BlankYellowEach()
-Dim cell As Range
+Dim cell As range
     For Each cell In Selection
     cell.FormatConditions.add Type:=xlExpression, Formula1:= _
         "=LEN(TRIM(" & cell.Address & "))=0"

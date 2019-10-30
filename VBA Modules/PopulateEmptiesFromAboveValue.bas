@@ -1,6 +1,6 @@
 Attribute VB_Name = "PopulateEmptiesFromAboveValue"
 Sub PopulateEmptyCellsWithValueDirectlyAbove()
-Dim rng As Range
+Dim rng As range
 Set rng = Selection
 
 

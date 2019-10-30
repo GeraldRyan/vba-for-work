@@ -18,7 +18,7 @@ movQuan = Application.InputBox("How many good rows in between the bad rows")
 For i = 1 To delQuan
     ActiveCell.rows("1:1").EntireRow.Select
     Selection.Delete Shift:=xlUp
-    ActiveCell.Offset(movQuan, 0).Range("A1:E1").Select
+    ActiveCell.Offset(movQuan, 0).range("A1:E1").Select
 Next i
 
 End Sub
@@ -42,7 +42,7 @@ MsgBox "This macro deletes rows from a table or workbook at a uniform interval. 
 For i = 1 To delQuan
     ActiveCell.rows("1:1").EntireRow.Select
     Selection.Delete Shift:=xlUp
-    ActiveCell.Offset(movQuan, 0).Range("A1:E1").Select
+    ActiveCell.Offset(movQuan, 0).range("A1:E1").Select
 Next i
 
 End Sub
