@@ -20,8 +20,8 @@ Application.EnableEvents = False
     PasteCell = "b3"
     CurrentWSName = Application.ActiveSheet.name
     Dim DeleteExtraneous As Integer
-    Dim InitLastCel As range
-    Dim InitLastCeladds As String
+    Dim TopRightCell As range
+    Dim BottomRightCell As range
     Dim InitLastCol As range
     Dim form As New SelectionParams
     Dim rng As range
@@ -29,31 +29,24 @@ Application.EnableEvents = False
     Dim chosenregiontxt As String
     Dim Quantity As Integer
     Dim bHeader As Boolean
-    Dim FirstInCustom As String
-    Dim LastInCustom As String
     
     ' get user input
 RequestInput:
     form.Show vbModal
     If form.range.text <> "" Then
         Set rng = range(form.range.text)
-    End If
-
-    If form.CurrentRegionGetter.text <> "" Then
-        Set ChosenRegion = range(form.CurrentRegionGetter.text).CurrentRegion
-    End If
-    Quantity = form.SampleSize
-    bHeader = form.bHeader
-    
-    ' process user input
-    If form.CurrentRegionGetter.text <> "" Then
-        RowCount = ChosenRegion.rows.count
-    ElseIf form.range.text <> "" Then
         RowCount = rng.rows.count
+        Set rngCurrentRegion = Intersect(rng.CurrentRegion, rng.EntireRow)
+    ElseIf form.CurrentRegionGetter.text <> "" Then
+        Set rngCurrentRegion = range(form.CurrentRegionGetter.text).CurrentRegion
+        RowCount = rngCurrentRegion.rows.count
     Else
         MsgBox ("Select either custom range or cell in table")
         GoTo RequestInput
     End If
+    Quantity = form.SampleSize
+    bHeader = form.bHeader
+    
     If bHeader = True Then
         RowCount = RowCount - 1
     End If
@@ -82,25 +75,6 @@ retry:
     
     
     '' Paste current region of range to new worksheet
-
-    If form.CurrentRegionGetter.text <> "" Then
-        Set rngCurrentRegion = ChosenRegion.CurrentRegion
-    Else
-        ' set the custom current range to paste
-        If rng(1).Offset(0, -1).FormulaR1C1 = "" Then
-            FirstInCustom = rng(1).Address
-        Else
-            FirstInCustom = rng(1).End(xlToLeft).Address
-        End If
-        If rng.Cells(rng.rows.count, rng.Columns.count).Offset(0, 1).FormulaR1C1 = "" Then
-            LastInCustom = rng.Cells(rng.rows.count, rng.Columns.count).Address
-        Else
-            LastInCustom = rng.Cells(rng.rows.count, rng.Columns.count).End(xlToRight).Address
-        End If
-        Set rngCurrentRegion = range(FirstInCustom & ":" & LastInCustom)
-    End If
-
-
     Set NewWs = Application.ActiveWorkbook.Worksheets.add(after:=Application.ActiveWorkbook.ActiveSheet)
     If Not WorksheetExists("sample") Then
         NewWs.name = "Sample"
@@ -108,17 +82,17 @@ retry:
     
     rngCurrentRegion.Copy NewWs.range(PasteCell)
 
-    '' Mark those selected
-    Set InitLastCel = range(PasteCell).Offset(4, 2).End(xlToRight).Offset(-4, 0) 'guard against partial row
-    InitLastCeladds = InitLastCel.Address
     
+    Set TopRightCell = range(PasteCell).CurrentRegion.Cells(1, rngCurrentRegion.Columns.count)
+    Set BottomRightCell = range(PasteCell).CurrentRegion.Cells(rngCurrentRegion.rows.count, rngCurrentRegion.Columns.count)
+
     If bHeader = True Then
-        With InitLastCel.Offset(0, 1) 'need to determine proper top row or could cause error
+        With TopRightCell.Offset(0, 1) 'need to determine proper top row or could cause error
             .Value = "Selection"
             .Font.Bold = True
         End With
     Else
-        With InitLastCel.Offset(-1, 1) 'need to determine proper top row or could cause error
+        With TopRightCell.Offset(-1, 1) 'need to determine proper top row or could cause error
             .Value = "Selection"
             .Font.Bold = True
         End With
@@ -127,14 +101,14 @@ retry:
     Dim instance As Variant
     If bHeader = True Then
         For Each instance In MyArray
-            With InitLastCel.Offset(instance, 1)
+            With TopRightCell.Offset(instance, 1)
                 .Value = "x"
                 .Interior.ColorIndex = 35
             End With
         Next
     Else
         For Each instance In MyArray
-            With InitLastCel.Offset(instance - 1, 1)
+            With TopRightCell.Offset(instance - 1, 1)
                 .Value = "x"
                 .Interior.ColorIndex = 35
             End With
@@ -147,26 +121,27 @@ retry:
         'get used column to iterate through
         Dim cell As range
         
+        '' this assumes there'll be something in the last column whihc may not be true. find way _
+        to get lower left corner instead
         If bHeader = True Then
-            Set InitLastCol = range(InitLastCel.Offset(1, 0).Address & ":" & InitLastCel.End(xlDown).Address)
+            Set InitLastCol = range(TopRightCell.Offset(1, 0).Address & ":" & BottomRightCell.Address)
         Else
-            Set InitLastCol = range(InitLastCel.Address & ":" & InitLastCel.End(xlDown).Address)
+            Set InitLastCol = range(TopRightCell.Address & ":" & BottomRightCell.Address)
         End If
             
 restart:
-        'InitLastCol = range(InitLastCel.Address & ":" & InitLastCel.End(xlDown).Address)
+        'InitLastCol = range(TopRightCell.Address & ":" & TopRightCell.End(xlDown).Address)
         For Each cell In InitLastCol
             If cell.Offset(0, 1).Value <> "x" Then
                 cell.EntireRow.Delete
-                ' to manage changed range problems
                 GoTo restart
             End If
         Next
     End If
     
-    range(InitLastCeladds).Offset(1, 3).Value = "Random Numbers Generated"
+    range(TopRightCell.Address).Offset(1, 3).Value = "Random Numbers Generated"
 For i = 0 To Quantity - 1
-    range(InitLastCeladds).Offset(2 + i, 3).Value = MyArray(i)
+    range(TopRightCell.Address).Offset(2 + i, 3).Value = MyArray(i)
 Next
 
 MsgBox ("             Tada")
