@@ -88,6 +88,12 @@ Sub awesomecallable(Optional ByVal text As String = "You are awesome Gerald")
         .PatternTintAndShade = 0
     End With
 End Sub
+Sub callawesome()
+awesome.awesomecallable ("other message")
+
+End Sub
+
+
 
 Sub awesome()
 '

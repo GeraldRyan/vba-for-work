@@ -8,12 +8,12 @@ Sub PivotTableReporterNS()
 
 Dim ClientName As String
 Dim SaveSettingsFile As String
-ClientName = range("C10").FormulaR1C1
+ClientName = Range("C10").FormulaR1C1
 Dim BillPeriod As String
 Dim bRunDV As Boolean
 
 'On Error GoTo ErrorHandler:
-BillPeriod = Right(Application.Worksheets("Report").range("A4").FormulaR1C1, Len(Application.Worksheets("Report").range("A4").FormulaR1C1) - 5)
+BillPeriod = Right(Application.Worksheets("Report").Range("A4").FormulaR1C1, Len(Application.Worksheets("Report").Range("A4").FormulaR1C1) - 5)
 Dim DirToSave As String
 'DirToSave = MyDocsPath & "\Documents\" & "EngagementTimeReports\"
 Dim FileNameToSaveAs As String
@@ -41,7 +41,7 @@ End If
 If WorksheetExists("PTFormat") Then
     bRunDV = False
     Worksheets("PTFormat").Activate
-    range("A1").Select
+    Range("A1").Select
 
 Else:
     'format the data to be able to make the pivot table
@@ -94,9 +94,9 @@ mycount = 0
 Dim r As Long
 Dim rangetosum As String
 Dim valtocopy As String
-Dim x2 As range
-Dim x3 As range
-Dim xdel As range
+Dim x2 As Range
+Dim x3 As Range
+Dim xdel As Range
 Dim rowsdeleted As Integer
 rowsdeleted = 0
 Dim ReportWSName As String
@@ -115,22 +115,22 @@ Dim GrandTotalHoursPT As Long
 
 
 Dim i As Integer
-Dim First As range
-Set First = range("A2")
-Dim LastCell As range
+Dim First As Range
+Set First = Range("A2")
+Dim LastCell As Range
 Set LastCell = Application.ActiveSheet.Cells.SpecialCells(xlCellTypeLastCell)
 
 
 ' delete easy first Rs and Cs
-range("A1:A5").EntireRow.Delete
-range("B:D,G:H").Delete
+Range("A1:A5").EntireRow.Delete
+Range("B:D,G:H").Delete
 
 ' prepare loops
 Set LastCell = LastCell.End(xlToLeft)
 Set LastCell = LastCell.End(xlToLeft)
 Set LastCell = LastCell.End(xlToLeft)
-Set First = range("A2")
-mycount = range(First, LastCell).Cells.count
+Set First = Range("A2")
+mycount = Range(First, LastCell).Cells.count
 First.Select
 'GoTo tempstart
 
@@ -212,8 +212,8 @@ For i = 1 To mycount
     'ActiveCell.Offset(1).Select
 LastIteration:
 Next i
-range("a1:d1").EntireColumn.AutoFit
-range("A1").Select
+Range("a1:d1").EntireColumn.AutoFit
+Range("A1").Select
 
 End Sub
 
@@ -227,7 +227,7 @@ Dim PSheet As Worksheet
 Dim DSheet As Worksheet
 Dim PCache As PivotCache
 Dim PTable As PivotTable
-Dim PRange As range
+Dim PRange As Range
 Dim LastRow As Long
 Dim LastCol As Long
 
@@ -299,7 +299,7 @@ MyArray(2) = "Budget to Actual"
 MyArray(3) = "PY to CY"
 Dim i As Integer
 
-Application.ActiveSheet.range("A1").Select
+Application.ActiveSheet.Range("A1").Select
 Selection.End(xlDown).End(xlDown).Select
 LRowNum = ActiveCell.row
 Selection.End(xlUp).Select
@@ -317,7 +317,7 @@ Next i
 
 'shade yeller
 ActiveCell.Offset(1, -4).Select
-ActiveCell.range("A1:B" & CStr(TimesToDo)).Select
+ActiveCell.Range("A1:B" & CStr(TimesToDo)).Select
 ''TODO make conditional yellow
 BlankYellow
 'Selection.Interior.Color = 65535
@@ -335,12 +335,12 @@ For i = 0 To TimesToDo
      Selection.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""??_);_(@_)"
     '' todo make conditional red, green, orange
     FormatCellsROG
-     ActiveCell.Offset(1, -1).range("A1").Select
+     ActiveCell.Offset(1, -1).Range("A1").Select
 Next i
 Selection.Offset(-1, -2).Select
 For i = 0 To 1
     ActiveCell.Formula = "=SUM(R[-" & CStr(TimesToDo) & "]C:R[-1]C)"
-    ActiveCell.Offset(0, 1).range("A1").Select
+    ActiveCell.Offset(0, 1).Range("A1").Select
 Next i
 
 End Sub
@@ -354,10 +354,10 @@ Function WorksheetExists(sName As String) As Boolean
     WorksheetExists = Evaluate("ISREF('" & sName & "'!A1)")
 End Function
 
-Sub SaveWorkbook(DirToSave As String, FileName As String)
+Sub SaveWorkbook(DirToSave As String, fileName As String)
 Dim PathToSave As String
-FileName = Replace(FileName, "/", "-")
-PathToSave = DirToSave & "\" & FileName
+fileName = Replace(fileName, "/", "-")
+PathToSave = DirToSave & "\" & fileName
 
 '    If Len(Dir(PathToSave)) <> 0 Then
 '    MsgBox ("File already exists. Overwrite?")
@@ -424,7 +424,7 @@ Sub FormatCellsROG()
 End Sub
 
 Sub BlankYellow()
-Dim cell As range
+Dim cell As Range
     For Each cell In Selection
     cell.FormatConditions.add Type:=xlExpression, Formula1:= _
         "=LEN(TRIM(" & cell.Address & "))=0"
@@ -453,11 +453,11 @@ End Sub
 
 Sub DataValidator(ReportName As String, PTData As String, bRun As Boolean)
 
-Dim rng1 As range
-Dim rng2 As range
+Dim rng1 As Range
+Dim rng2 As Range
 Dim GT1 As Single
 Dim GT2 As Single
-Dim rng3 As range
+Dim rng3 As Range
 
 If Not bRun = True Then GoTo EndSubb
 
@@ -475,7 +475,7 @@ If GT1 - GT2 <> 0 Then
     End
 End If
 
-range("A1").Select
+Range("A1").Select
 
 EndSubb:
 End Sub
@@ -513,11 +513,11 @@ Dim content As String
 ReadSaveLocation = content
 End Function
 
-Function FileExists(FilePath As String) As Boolean
+Function FileExists(filePath As String) As Boolean
 Dim TestStr As String
     TestStr = ""
     On Error Resume Next
-    TestStr = Dir(FilePath)
+    TestStr = Dir(filePath)
     On Error GoTo 0
     If TestStr = "" Then
         FileExists = False
@@ -528,7 +528,7 @@ End Function
 
 
 
-Sub CallColumnWidthAutoFit(rng As range)
+Sub CallColumnWidthAutoFit(rng As Range)
 'autofit the columns of the selection
 rng.EntireColumn.AutoFit
 

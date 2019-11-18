@@ -2,7 +2,7 @@ Attribute VB_Name = "arrows"
 Option Explicit
 
 
-Sub drawarrows(FromRange As range, ToRange As range, Optional RGBcolor As Long, Optional LineType As String)
+Sub drawarrows(FromRange As Range, ToRange As Range, Optional RGBcolor As Long, Optional LineType As String)
 '---------------------------------------------------------------------------------------------------
 '---Script: DrawArrows------------------------------------------------------------------------------
 '---Created by: Ryan Wells -------------------------------------------------------------------------
@@ -78,8 +78,8 @@ Sub Fence()
 '
 
     ActiveCell.SpecialCells(xlLastCell).Select
-    ActiveCell.Offset(2, 2).range("A1").Select
-    range(Selection, Selection.End(xlToLeft)).Select
+    ActiveCell.Offset(2, 2).Range("A1").Select
+    Range(Selection, Selection.End(xlToLeft)).Select
     With Selection.Interior
         .Pattern = xlSolid
         .PatternColorIndex = xlAutomatic
@@ -88,7 +88,7 @@ Sub Fence()
         .PatternTintAndShade = 0
     End With
     ActiveCell.SpecialCells(xlLastCell).Select
-    range(Selection, Selection.End(xlUp)).Select
+    Range(Selection, Selection.End(xlUp)).Select
     With Selection.Interior
         .PatternColorIndex = xlAutomatic
         .Color = 16711680
@@ -96,7 +96,7 @@ Sub Fence()
         .PatternTintAndShade = 0
     End With
     ActiveCell.Columns("A:A").EntireColumn.ColumnWidth = 2
-    range("A1").Select
+    Range("A1").Select
 End Sub
 
 
@@ -154,8 +154,8 @@ End Sub
 
 
 Sub foo()
-  Dim r As range, rows As Long, i As Long
-  Set r = ActiveSheet.range("A1:Z50")
+  Dim r As Range, rows As Long, i As Long
+  Set r = ActiveSheet.Range("A1:Z50")
   rows = r.rows.count
   For i = rows To 1 Step (-1)
     If WorksheetFunction.CountA(r.rows(i)) = 0 Then r.rows(i).Delete
@@ -171,7 +171,7 @@ Sub ReverseSign()
 ' Reverses the sign of a cell when run
 '
 
-Dim c As range
+Dim c As Range
 For Each c In Selection
 c.Value = -c.Value
 Next c
@@ -196,16 +196,16 @@ Target = InputBox("Enter the required value", "Enter Value")
 'Worksheets("Goal_Seek").Activate
 
 With ActiveWorkbook.ActiveSheet
-.range(Selected.Cells).GoalSeek _
+.Range(Selected.Cells).GoalSeek _
 Goal:=Target, _
-ChangingCell:=range("C2")
+ChangingCell:=Range("C2")
 End With
 Exit Sub
 ErrorHandler:
 MsgBox ("Sorry, value is not valid.")
 End Sub
 Sub highlightMaxValue()
-Dim rng As range
+Dim rng As Range
 For Each rng In Selection
 If rng = WorksheetFunction.Max(Selection) Then
 rng.Style = "Good"
@@ -217,7 +217,7 @@ Sub highlightMinValue()
 
 
 
-Dim rng As range
+Dim rng As Range
     For Each rng In Selection
         If rng = WorksheetFunction.Min(Selection) Then
         rng.Style = "Good"

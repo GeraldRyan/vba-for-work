@@ -1,6 +1,6 @@
 Attribute VB_Name = "ColumnWidthAutoFit"
 Sub ColumnWidthAutoFit()
-Dim rng As range
+Dim rng As Range
 
 'autofit the columns of the selection
 Selection.EntireColumn.AutoFit
@@ -14,7 +14,7 @@ Next
 
 End Sub
 
-Sub CallColumnWidthAutoFit(rng As range)
+Sub CallColumnWidthAutoFit(rng As Range)
 
 'autofit the columns of the selection
 Selection.EntireColumn.AutoFit

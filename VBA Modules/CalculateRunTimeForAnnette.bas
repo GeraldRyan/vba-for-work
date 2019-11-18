@@ -20,7 +20,7 @@ Dim PivotTableWS As Worksheet
 Set PivotTableWS = Application.ActiveSheet
 Dim ws As Worksheet
 Dim looptimes As Integer
-Dim cell As range
+Dim cell As Range
 Dim ptlname As String
 
 ' initialize value to zero (This loop runs about 15 times)
@@ -61,12 +61,12 @@ MsgBox ("Have a nice day")
 End Sub
 
 
-Sub TransferData(PivotTableWS As Worksheet, ws As Worksheet, name As range)
+Sub TransferData(PivotTableWS As Worksheet, ws As Worksheet, name As Range)
 Dim looptimes As Integer
 Dim datatotransfer As Long
 Dim i As Integer
 Dim indexnumber As Long
-Dim CellToPasteTo As range
+Dim CellToPasteTo As Range
 
 
     looptimes = loopvalues(PivotTableWS, ws, name)
@@ -88,7 +88,7 @@ Dim CellToPasteTo As range
 End Sub
 
 
-Function loopvalues(PivotTableWS As Worksheet, ws As Worksheet, cell As range)
+Function loopvalues(PivotTableWS As Worksheet, ws As Worksheet, cell As Range)
     Dim endrow As Integer
     Dim startrow As Integer
     startrow = cell.row
@@ -100,11 +100,11 @@ End Function
 
 Sub ZeroOut(ws As Worksheet)
 
-Dim cell As range
+Dim cell As Range
 Dim LastRow As Long
-Dim rng As range
+Dim rng As Range
 LastRow = ws.UsedRange.rows.count
-Set rng = ws.range("B1:B" & LastRow)
+Set rng = ws.Range("B1:B" & LastRow)
 
 If ws.name = "Summary" Or ws.Visible = False Then
     GoTo endd

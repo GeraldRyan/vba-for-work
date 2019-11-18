@@ -1,7 +1,7 @@
 Attribute VB_Name = "ProperAndTrim"
 Sub propercase()
 
-Dim Jimmy As range, Buffett As range
+Dim Jimmy As Range, Buffett As Range
 
 Set Jimmy = Selection
 
@@ -15,7 +15,7 @@ End Sub
 
 Sub Trimmer()
 
-Dim rng As range
+Dim rng As Range
 Set rng = Selection
 For Each cell In rng
     cell.Value = WorksheetFunction.Trim(cell)

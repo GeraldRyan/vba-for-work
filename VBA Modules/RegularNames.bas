@@ -1,6 +1,6 @@
 Attribute VB_Name = "RegularNames"
 Sub RegularNames()
-Dim rng As range, cell As range
+Dim rng As Range, cell As Range
 Dim T
     Set rng = Selection
     On Error Resume Next
@@ -22,7 +22,7 @@ Sub NameFormat()
 
 '
 Dim MyFormulaString As String
-Dim rngMyRange As range
+Dim rngMyRange As Range
 Set rngMyRange = Selection
 OffsetRange = rngMyRange.Offset(0, -1)
 
@@ -34,7 +34,7 @@ rngMyRange.Formula = MyFormulaString
 End Sub
 Sub NameFormat2()
 Dim MyFormulaString As String
-Dim rngMyRange As range
+Dim rngMyRange As Range
 
 For Each rngMyRange In [A1:A100]  'raw data in col A
     If rngMyRange.Value <> "" Then

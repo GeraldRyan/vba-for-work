@@ -12,7 +12,7 @@ End With
 End Sub
 
 Sub highlightMaxValue()
-Dim rng As range
+Dim rng As Range
 For Each rng In Selection
     If rng = WorksheetFunction.Max(Selection) Then
         rng.Style = "Good"
@@ -22,7 +22,7 @@ End Sub
 
 Sub highlightMinValue()
 
-Dim rng As range
+Dim rng As Range
 
 For Each rng In Selection
     If rng = WorksheetFunction.Min(Selection) Then

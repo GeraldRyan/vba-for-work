@@ -18,11 +18,11 @@ Average2 = (n1 + n2) / 2
 
 End Function
 
-Function GetCombination(CoinsRange As range, SumCellId As range) As String
+Function GetCombination(CoinsRange As Range, SumCellId As Range) As String
 Dim Nb As Integer
 Dim Com As String
 Dim Sum As Double
-Dim r As range
+Dim r As Range
 Set r = CoinsRange
 Sum = SumCellId.Value
 For Each cell In r.Cells

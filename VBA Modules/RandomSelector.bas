@@ -1,10 +1,10 @@
 Attribute VB_Name = "RandomSelector"
 Option Explicit
 Sub RandomSample()
-'Application.ScreenUpdating = False
+Application.ScreenUpdating = False
 Application.EnableEvents = False
 MakeArray
-'Application.ScreenUpdating = True
+Application.ScreenUpdating = True
 Application.EnableEvents = True
 End Sub
 
@@ -14,19 +14,19 @@ Application.EnableEvents = False
     Dim i As Integer
     Dim TryRand As Integer
     Dim RowCount As Integer
-    Dim rngCurrentRegion As range
+    Dim rngCurrentRegion As Range
     Dim NewWs As Worksheet
     Dim CurrentWSName As String
     Dim PasteCell As String
     PasteCell = "b3"
     CurrentWSName = Application.ActiveSheet.name
     Dim DeleteExtraneous As Integer
-    Dim InitLastCel As range
-    Dim InitLastCeladds As String
-    Dim InitLastCol As range
+    Dim TopRightCell As Range
+    Dim BottomRightCell As Range
+    Dim InitLastCol As Range
     Dim form As New SelectionParams
-    Dim rng As range
-    Dim ChosenRegion As range
+    Dim rng As Range
+    Dim ChosenRegion As Range
     Dim chosenregiontxt As String
     Dim Quantity As Integer
     Dim bHeader As Boolean
@@ -34,25 +34,20 @@ Application.EnableEvents = False
     ' get user input
 RequestInput:
     form.Show vbModal
-    If form.range.text <> "" Then
-    Set rng = range(form.range.text)
-    End If
-
-    If form.CurrentRegionGetter.text <> "" Then
-        Set ChosenRegion = range(form.CurrentRegionGetter.text).CurrentRegion
-    End If
-    Quantity = form.SampleSize
-    bHeader = form.bHeader
-    
-    ' process user input
-    If form.CurrentRegionGetter.text <> "" Then
-        RowCount = ChosenRegion.rows.count
-    ElseIf form.range.text <> "" Then
+    If form.Range.text <> "" Then
+        Set rng = Range(form.Range.text)
         RowCount = rng.rows.count
+        Set rngCurrentRegion = Intersect(rng.CurrentRegion, rng.EntireRow)
+    ElseIf form.CurrentRegionGetter.text <> "" Then
+        Set rngCurrentRegion = Range(form.CurrentRegionGetter.text).CurrentRegion
+        RowCount = rngCurrentRegion.rows.count
     Else
         MsgBox ("Select either custom range or cell in table")
         GoTo RequestInput
     End If
+    Quantity = form.SampleSize
+    bHeader = form.bHeader
+    
     If bHeader = True Then
         RowCount = RowCount - 1
     End If
@@ -81,34 +76,24 @@ retry:
     
     
     '' Paste current region of range to new worksheet
-
-    If form.CurrentRegionGetter.text <> "" Then
-        RowCount = ChosenRegion.rows.count
-        Set rngCurrentRegion = ChosenRegion.CurrentRegion
-    Else
-        RowCount = rng.rows.count
-        Set rngCurrentRegion = rng.CurrentRegion
-    End If
-
-
     Set NewWs = Application.ActiveWorkbook.Worksheets.add(after:=Application.ActiveWorkbook.ActiveSheet)
     If Not WorksheetExists("sample") Then
         NewWs.name = "Sample"
     End If
     
-    rngCurrentRegion.Copy NewWs.range(PasteCell)
+    rngCurrentRegion.Copy NewWs.Range(PasteCell)
 
-    '' Mark those selected
-    Set InitLastCel = range(PasteCell).Offset(4, 2).End(xlToRight).Offset(-4, 0) 'guard against partial row
-    InitLastCeladds = InitLastCel.Address
     
+    Set TopRightCell = Range(PasteCell).CurrentRegion.Cells(1, rngCurrentRegion.Columns.count)
+    Set BottomRightCell = Range(PasteCell).CurrentRegion.Cells(rngCurrentRegion.rows.count, rngCurrentRegion.Columns.count)
+
     If bHeader = True Then
-        With InitLastCel.Offset(0, 1) 'need to determine proper top row or could cause error
+        With TopRightCell.Offset(0, 1) 'need to determine proper top row or could cause error
             .Value = "Selection"
             .Font.Bold = True
         End With
     Else
-        With InitLastCel.Offset(-1, 1) 'need to determine proper top row or could cause error
+        With TopRightCell.Offset(-1, 1) 'need to determine proper top row or could cause error
             .Value = "Selection"
             .Font.Bold = True
         End With
@@ -117,14 +102,14 @@ retry:
     Dim instance As Variant
     If bHeader = True Then
         For Each instance In MyArray
-            With InitLastCel.Offset(instance, 1)
+            With TopRightCell.Offset(instance, 1)
                 .Value = "x"
                 .Interior.ColorIndex = 35
             End With
         Next
     Else
         For Each instance In MyArray
-            With InitLastCel.Offset(instance - 1, 1)
+            With TopRightCell.Offset(instance - 1, 1)
                 .Value = "x"
                 .Interior.ColorIndex = 35
             End With
@@ -135,28 +120,29 @@ retry:
     DeleteExtraneous = MsgBox("Sample table created succesfully. Delete all extraneous rows?", vbYesNo)
     If DeleteExtraneous = 6 Then
         'get used column to iterate through
-        Dim cell As range
+        Dim cell As Range
         
+        '' this assumes there'll be something in the last column whihc may not be true. find way _
+        to get lower left corner instead
         If bHeader = True Then
-            Set InitLastCol = range(InitLastCel.Offset(1, 0).Address & ":" & InitLastCel.End(xlDown).Address)
+            Set InitLastCol = Range(TopRightCell.Offset(1, 0).Address & ":" & BottomRightCell.Address)
         Else
-            Set InitLastCol = range(InitLastCel.Address & ":" & InitLastCel.End(xlDown).Address)
+            Set InitLastCol = Range(TopRightCell.Address & ":" & BottomRightCell.Address)
         End If
             
 restart:
-        'InitLastCol = range(InitLastCel.Address & ":" & InitLastCel.End(xlDown).Address)
+        'InitLastCol = range(TopRightCell.Address & ":" & TopRightCell.End(xlDown).Address)
         For Each cell In InitLastCol
             If cell.Offset(0, 1).Value <> "x" Then
                 cell.EntireRow.Delete
-                ' to manage changed range problems
                 GoTo restart
             End If
         Next
     End If
     
-    range(InitLastCeladds).Offset(1, 3).Value = "Random Numbers Generated"
+    Range(TopRightCell.Address).Offset(1, 3).Value = "Random Numbers Generated"
 For i = 0 To Quantity - 1
-    range(InitLastCeladds).Offset(2 + i, 3).Value = MyArray(i)
+    Range(TopRightCell.Address).Offset(2 + i, 3).Value = MyArray(i)
 Next
 
 MsgBox ("             Tada")

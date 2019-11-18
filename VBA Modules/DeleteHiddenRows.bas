@@ -1,6 +1,6 @@
 Attribute VB_Name = "DeleteHiddenRows"
 Sub DeleteHiddenRows()
-Dim SelectedArea As range
+Dim SelectedArea As Range
 Set SelectedArea = Selection
 
 For Each rw In SelectedArea.rows

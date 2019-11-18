@@ -17,7 +17,7 @@ run:
 Set PT = Application.ActiveSheet
 Dim ws As Worksheet
 Dim looptimes As Integer
-Dim cell As range
+Dim cell As Range
 Dim stdName As String, unhyphName As String, squishName As String
 Dim c As Integer
 
@@ -74,12 +74,12 @@ End If
 End Sub
 
 
-Sub TransferData(ws As Worksheet, cell As range)
+Sub TransferData(ws As Worksheet, cell As Range)
 Dim looptimes As Integer
 Dim datatotransfer As Long
 Dim i As Integer
 Dim indexnumber As Long
-Dim CellToPasteTo As range
+Dim CellToPasteTo As Range
 
     looptimes = looptimesf(ws, cell)
   
@@ -92,7 +92,7 @@ Dim CellToPasteTo As range
     Next
 End Sub
 
-Function looptimesf(ws As Worksheet, cell As range)
+Function looptimesf(ws As Worksheet, cell As Range)
     Dim endrow As Integer
     Dim startrow As Integer
 
@@ -110,11 +110,11 @@ End Function
 
 Sub ZeroOut(ws As Worksheet)
 
-Dim cell As range
+Dim cell As Range
 Dim LastRow As Long
-Dim rng As range
+Dim rng As Range
 LastRow = ws.UsedRange.rows.count
-Set rng = ws.range("B1:B" & LastRow)
+Set rng = ws.Range("B1:B" & LastRow)
 
 If ws.name = "Summary" Or ws.Visible = False Then
     GoTo endd
@@ -147,11 +147,11 @@ For Each ws In Application.ActiveWorkbook.Worksheets
 
     '' access colum b for getting values
         'set used range of column b as range
-        Dim cell As range
+        Dim cell As Range
         Dim LastRow As Integer
-        Dim rng As range
+        Dim rng As Range
         LastRow = ws.UsedRange.rows.count
-        Set rng = ws.range("B1:B" & LastRow)
+        Set rng = ws.Range("B1:B" & LastRow)
         
         
         For Each cell In rng
@@ -171,7 +171,7 @@ End If
 End Sub
 
 Sub doctorchecker()
-Dim cell As range
+Dim cell As Range
 CountMissed = 0
 Dim stdName As String, unhyphName As String, squishName As String
 Dim PT As Worksheet
@@ -199,7 +199,7 @@ Set PT = Application.ActiveSheet
 End Sub
 
 Sub DoctorAdder()
-Dim cell As range
+Dim cell As Range
 Dim stdName As String, unhyphName As String, squishName As String ''have to check for all name varations to not duplicate ws
 newsheets = 0
 Dim bUseTemplate As Boolean
@@ -226,13 +226,13 @@ For Each cell In PT.UsedRange
             If bUseTemplate = True Then
                 Application.Worksheets("Template").Copy after:=Sheets(Sheets.count)
                 Application.ActiveSheet.name = stdName
-                range("a2").Formula = stdName
+                Range("a2").Formula = stdName
                 newsheets = newsheets + 1
             Else
                 Application.Worksheets(AdHocTemplateStr).Copy after:=Sheets(Sheets.count) '' random worksheet chosen, must guess right or error
                 '' TODO come up with protection in case no named template and wrong guess. Capture one is worksheet and save that
                 Application.ActiveSheet.name = stdName
-                range("a2").Formula = stdName
+                Range("a2").Formula = stdName
                 newsheets = newsheets + 1
             End If
         End If
@@ -259,7 +259,7 @@ Private Sub CreateSheet(wsname As String)
 End Sub
 
 
-Sub GetNames(ByVal cell As range, ByRef stdName As String, Optional ByRef unhyphName As String, Optional ByRef squishName As String)
+Sub GetNames(ByVal cell As Range, ByRef stdName As String, Optional ByRef unhyphName As String, Optional ByRef squishName As String)
 
 stdName = Mid(cell.Value, InStr(cell.Value, ",") + 2, 1) & ". " & Left(cell.Value, InStr(cell.Value, ",") - 1)
 
@@ -275,7 +275,7 @@ End Sub
 
 ''function not currently being used but could replace messier code upstairs.
 
-Function bIsNameCell(ByVal cell As range)
+Function bIsNameCell(ByVal cell As Range)
 If InStr(cell.Value, ",") <> 0 And cell.Offset(0, 1).Value <> "" Then ' if it looks to be a bona fide nombre ==>
     bIsNameCell = True
 Else

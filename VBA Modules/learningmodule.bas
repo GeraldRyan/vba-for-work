@@ -57,8 +57,8 @@ Next ws
 End Sub
 
 Sub RemoveSpaces()
-Dim myRange As range
-Dim myCell As range
+Dim myRange As Range
+Dim myCell As Range
 Select Case MsgBox("You Can't Undo This Action. " & "Save Workbook First?", _
 vbYesNoCancel, "Alert")
 Case Is = vbYesThisWorkbook.Save
@@ -83,7 +83,7 @@ Set csheet = ActiveSheet
 For Each sht In ActiveWorkbook.Worksheets
   If sht.Visible Then
     sht.Activate
-    range("A1").Select
+    Range("A1").Select
     ActiveWindow.ScrollRow = 1
     ActiveWindow.ScrollColumn = 1
   End If
@@ -101,7 +101,7 @@ Sheets.add after:=ActiveSheet, count:=i
 End Sub
 Sub OpenxCalculator()
 Attribute OpenxCalculator.VB_ProcData.VB_Invoke_Func = "C\n14"
-Application.ActivateMicrosoftApp Index:=0
+Application.ActivateMicrosoftApp index:=0
 End Sub
 
 Sub OpenWorkbookAsAttachment()
@@ -111,7 +111,7 @@ End Sub
 
 
 Sub highlightNegativeNumbers()
-Dim rng As range
+Dim rng As Range
 For Each rng In Selection
     If WorksheetFunction.IsNumber(rng) Then
         If rng.Value < 0 Then

@@ -1,6 +1,6 @@
 Attribute VB_Name = "PopulateEmptiesFromAboveValue"
 Sub PopulateEmptyCellsWithValueDirectlyAbove()
-Dim rng As range
+Dim rng As Range
 Set rng = Selection
 
 
@@ -13,8 +13,6 @@ For Each cell In rng
         Application.ActiveSheet.Paste
     End If
 Next cell
-
-
 
 End Sub
 

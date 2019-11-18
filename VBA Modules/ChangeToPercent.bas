@@ -3,7 +3,7 @@ Sub changetopercent()
 '
 ' changetopercent Macro
 
-Dim Billy As range, john As range
+Dim Billy As Range, john As Range
 Set Billy = Selection
 
 For Each john In Billy
@@ -43,8 +43,8 @@ End Sub
 
 
 Sub change2percent2()
-Dim n1 As range
-Dim n2 As range
+Dim n1 As Range
+Dim n2 As Range
 
     Set n1 = Application.InputBox(Prompt:= _
                     "Select cells to create formula", _

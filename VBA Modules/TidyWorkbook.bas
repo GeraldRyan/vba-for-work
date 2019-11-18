@@ -18,3 +18,13 @@ For Each ws In Application.ActiveWorkbook.Worksheets
 Next
 Application.ScreenUpdating = True
 End Sub
+
+Sub TogglePageBreaks()
+
+    If Application.ActiveSheet.DisplayPageBreaks = False Then
+        Application.ActiveSheet.DisplayPageBreaks = True
+    Else
+        Application.ActiveSheet.DisplayPageBreaks = False
+    End If
+    
+End Sub

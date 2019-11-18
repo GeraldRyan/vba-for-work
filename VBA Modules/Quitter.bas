@@ -11,10 +11,12 @@ Dim wb As Workbook
 
 For Each wb In Application.Workbooks
     remaining = Application.Workbooks.count
-    If wb.ReadOnly = True Then
-        wb.Close savechanges:=False
-    Else:
-        wb.Close savechanges:=True
+    If Not LCase(wb.Worksheets(1).Range("a1").Value) = "keepopen" Then
+        If wb.ReadOnly = True Then
+            wb.Close savechanges:=False
+        Else:
+            wb.Close savechanges:=True
+        End If
     End If
 Next
 
@@ -79,5 +81,25 @@ iOpen = Application.Workbooks.count
 Next
 
 Application.EnableEvents = True
+End Sub
+
+Sub SaveNewVersion()
+'' saves new version in CWD
+
+    Application.EnableEvents = False
+    Dim fileName As String, index As Long, ext As String
+    arr = Split(ActiveWorkbook.name, ".")
+    ext = arr(UBound(arr))
+    If InStr(ActiveWorkbook.name, "_v") = 0 Then
+         
+        fileName = ActiveWorkbook.path & "\" & Left(ActiveWorkbook.name, InStr(ActiveWorkbook.name, ".") - 1) & "_v1." & ext
+        ActiveWorkbook.SaveAs (fileName)
+    Else
+        index = CInt(Split(Right(ActiveWorkbook.name, Len(ActiveWorkbook.name) - InStr(ActiveWorkbook.name, "_v") - 1), ".")(0))
+        index = index + 1
+        fileName = ActiveWorkbook.path & "\" & Left(ActiveWorkbook.name, InStr(ActiveWorkbook.name, "_v") - 1) & "_v" & index & "." & ext
+        ActiveWorkbook.SaveAs (fileName)
+    End If
+    Application.EnableEvents = True
 End Sub
 
