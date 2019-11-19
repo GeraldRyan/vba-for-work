@@ -1,0 +1,311 @@
+Option Explicit
+Sub AxcessTabler()
+Application.ScreenUpdating = False
+Application.EnableEvents = False
+Dim filePath As String
+filePath = "C:\Users\" & Environ("username") & "\ServiceCodeTable.csv"
+Dim cell As range
+Dim codeValue As String
+Dim valueToPaste As String
+Dim startcell, endcell As range
+Dim i As Integer
+Dim StartTime As Double
+Dim SecondsElapsed As Double
+StartTime = Timer
+
+Application.ActiveSheet.UsedRange.WrapText = False
+
+Set startcell = Application.ActiveSheet.UsedRange.Find("Service Code")
+
+startcell.EntireColumn.Offset(0, 1).Insert Shift:=xlToRight
+startcell.Offset(0, 1).Value = "Service Description"
+Set endcell = range("A1").currentRegion.Cells(startcell.currentRegion.rows.count, startcell.Column)
+
+' do the loop of value table lookup
+For i = 1 To endcell.Row - 1
+' do it
+    codeValue = startcell.Offset(i, 0).Value
+    valueToPaste = ReadFile(filePath, codeValue)
+    If valueToPaste = "error" Then Exit Sub
+    startcell.Offset(i, 1).Value = valueToPaste
+Next
+
+pivotTheStuff
+AddUsercells
+SecondsElapsed = Round(Timer - StartTime, 4)
+If MsgBox("Completed in " & SecondsElapsed & " seconds. Save File?", vbYesNo) = 6 Then
+    Application.Dialogs(xlDialogSaveAs).Show
+End If
+
+Application.ScreenUpdating = True
+Application.EnableEvents = True
+End Sub
+
+Sub pivotTheStuff()
+Application.EnableEvents = False
+Dim pivotSheet As Worksheet
+Dim dataSheet As Worksheet
+Dim pivotCache As pivotCache
+Dim pivotTable As pivotTable
+Dim dataRange As range
+Dim LastRow As Long
+Dim LastCol As Long
+Dim thisPT As String
+thisPT = "this"
+
+Dim rngCurrentRegion As range
+Set rngCurrentRegion = range("A1").currentRegion
+
+Set dataSheet = Application.ActiveSheet
+Set dataRange = range("a1").currentRegion
+Sheets.add after:=Application.ActiveSheet
+If Not sheetExists("PivotTable") Then
+    Application.ActiveSheet.name = "PivotTable"
+End If
+Set pivotSheet = Worksheets(Application.ActiveSheet.name)
+
+Set pivotCache = Application.ActiveWorkbook.PivotCaches.Create(xlDatabase, SourceData:=dataRange)
+Set pivotTable = pivotCache.CreatePivotTable(pivotSheet.Cells(3, 3), thisPT)
+With Application.ActiveSheet.PivotTables(thisPT).PivotFields("Service Description")
+    .Orientation = xlRowField
+    .Position = 1
+End With
+With Application.ActiveSheet.PivotTables(thisPT).PivotFields("Staff ID")
+    .Orientation = xlColumnField
+    .Position = 1
+End With
+With Application.ActiveSheet.PivotTables(thisPT).PivotFields("Hours")
+    .Orientation = xlDataField
+    .Position = 1
+    .Function = xlSum
+    .name = "Time"
+    .NumberFormat = "#,###"
+End With
+With Application.ActiveSheet.PivotTables(thisPT)
+    .ShowTableStyleRowStripes = True
+    .TableStyle2 = "pivotstylemedium9"
+End With
+Application.ActiveWindow.DisplayGridlines = False
+
+Application.EnableEvents = True
+
+End Sub
+
+
+Function ReadFile(filePath As String, serviceCode As String) As String
+Dim lineFromFile As Variant
+Dim lineItems As Variant
+
+On Error GoTo errHandler
+Open filePath For Input As #1
+Do Until EOF(1)
+    Line Input #1, lineFromFile
+    lineItems = Split(lineFromFile, ",")
+    
+    If serviceCode = "" Then
+        ReadFile = "blank"
+        GoTo endThis
+    End If
+    If lineItems(2) = serviceCode Or lineItems(2) = Left(serviceCode, Len(serviceCode) - 1) Then
+        ReadFile = lineItems(3)
+        GoTo endThis
+    End If
+Loop
+GoTo endThis
+errHandler:
+MsgBox "Make sure file ""ServiceCodeTable.csv"" exists in designated location on your PC"
+ReadFile = "error"
+endThis:
+Close #1
+End Function
+
+Sub formatTableau() '' we probably don't need this sub since pivot tables can filter and format
+
+Dim i As Integer
+
+Dim rngCurrentRegion, topRightCell, bottomRightCell As range
+
+    Set rngCurrentRegion = range("a1").currentRegion
+    Set topRightCell = range("A1").currentRegion.Cells(1, rngCurrentRegion.Columns.count)
+    Set bottomRightCell = range("A1").currentRegion.Cells(rngCurrentRegion.rows.count, rngCurrentRegion.Columns.count)
+    Debug.Print (topRightCell.Address & " " & rngCurrentRegion.Address)
+    
+'' for each cell in first row's active region
+For i = 1 To topRightCell.Column
+    '' loop somehow through teach top cell
+    
+    '' if cell value is not key values (e.g. "service code", "staff ID") then
+        ''delete entire column
+Next
+
+End Sub
+
+
+Sub TimedAxcessTabler()
+
+'PURPOSE: Determine how many seconds it took for code to completely run
+'SOURCE: www.TheSpreadsheetGuru.com/the-code-vault
+
+Dim StartTime As Double
+Dim SecondsElapsed As Double
+
+'Remember time when macro starts
+  StartTime = Timer
+
+'*****************************
+'Insert Your Code Here...
+AxcessTabler
+'*****************************
+
+'Determine how many seconds code took to run
+  SecondsElapsed = Round(Timer - StartTime, 4)
+  Debug.Print (SecondsElapsed)
+
+'Notify user in seconds
+  MsgBox "This code ran successfully in " & SecondsElapsed & " seconds", vbInformation
+
+
+End Sub
+
+Function sheetExists(sheetToFind As String) As Boolean
+Dim sheet As Worksheet
+    sheetExists = False
+    For Each sheet In Worksheets
+        If sheetToFind = sheet.name Then
+            sheetExists = True
+            Exit Function
+        End If
+    Next sheet
+End Function
+
+
+Sub AddUsercells()
+Dim currentRegion As range
+Dim topRight, bottomRight As range
+Dim FRowNum As Integer
+Dim LRowNum As Integer
+Dim MyArray(3) As String
+Dim TimesToDo As Integer
+MyArray(0) = "Budget"
+MyArray(1) = "Prior Year"
+MyArray(2) = "Budget to Actual"
+MyArray(3) = "PY to CY"
+Dim i As Integer
+
+Set currentRegion = Application.ActiveSheet.range("c3").currentRegion
+Set topRight = currentRegion.Cells(1, currentRegion.Columns.count)
+Set bottomRight = currentRegion.Cells(currentRegion.rows.count, currentRegion.Columns.count)
+
+TimesToDo = bottomRight.Row - topRight.Row - 2
+
+For i = 0 To 3
+    With topRight.Offset(1, i + 1)
+        .FormulaR1C1 = MyArray(i) ' "Budget"
+        .Font.Bold = True
+        .HorizontalAlignment = xlCenter
+    End With
+Next i
+
+Dim shadeyellowrange As range
+Set shadeyellowrange = range(topRight.Offset(2, 1).Address & ":" & bottomRight.Offset(-1, 2).Address)
+Dim rgbRange As range
+Set rgbRange = range(topRight.Offset(2, 3).Address & ":" & bottomRight.Offset(-1, 4).Address)
+
+
+Call BlankYellow(range(topRight.Offset(2, 1).Address & ":" & bottomRight.Offset(-1, 2).Address))
+'Selection.Interior.Color = 65535
+
+For i = 0 To TimesToDo
+     With topRight.Offset(i + 2, 3)
+        .Formula = "=" & topRight.Offset(i + 2, 1).Address & "-" & topRight.Offset(i + 2, 0).Address
+        .Style = "Comma"
+        .NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""??_);_(@_)"
+     End With
+
+     
+     With topRight.Offset(i + 2, 4)
+        .Formula = "=" & topRight.Offset(i + 2, 2).Address & "-" & topRight.Offset(i + 2, 0).Address
+        .Style = "Comma"
+        .NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""??_);_(@_)"
+     End With
+Next i
+
+    Call FormatCellsROG(rgbRange)
+
+For i = 1 To 2
+
+    bottomRight.Offset(0, i).FormulaR1C1 = "=SUM(R[-" & CStr(TimesToDo) & "]C:R[-1]C)"
+
+Next i
+
+End Sub
+
+
+Sub FormatCellsROG(theRange As range)
+
+Dim cell As range
+'' Adds conditional formatting for cells based on value differentials
+For Each cell In theRange
+    '' sets red shade RED text if less than -5
+    cell.FormatConditions.add Type:=xlCellValue, Operator:=xlLess, _
+        Formula1:="=-5"
+    cell.FormatConditions(cell.FormatConditions.count).SetFirstPriority
+    With cell.FormatConditions(1).Font
+        .Color = -16383844
+        .TintAndShade = 0
+    End With
+    With cell.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = 13551615
+        .TintAndShade = 0
+    End With
+    cell.FormatConditions(1).StopIfTrue = False
+    
+    '' sets ORANGE shade and red text if between -5 and -.51
+    cell.FormatConditions.add Type:=xlCellValue, Operator:=xlBetween, _
+        Formula1:="=-5", Formula2:="=-.51"
+    cell.FormatConditions(cell.FormatConditions.count).SetFirstPriority
+    With cell.FormatConditions(1).Font
+        .Color = -16776961
+        .TintAndShade = 0
+    End With
+    With cell.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = 49407
+        .TintAndShade = 0
+    End With
+    cell.FormatConditions(1).StopIfTrue = False
+    
+    
+    '' sets GREEN shade and black text if greater than 0
+    cell.FormatConditions.add Type:=xlCellValue, Operator:=xlGreater, _
+        Formula1:="=0"
+    cell.FormatConditions(cell.FormatConditions.count).SetFirstPriority
+    With cell.FormatConditions(1).Font
+        .Color = -16752384
+        .TintAndShade = 0
+    End With
+    With cell.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = 13561798
+        .TintAndShade = 0
+    End With
+    cell.FormatConditions(1).StopIfTrue = False
+Next
+    
+End Sub
+
+Sub BlankYellow(theRange As range)
+Dim cell As range
+    For Each cell In theRange
+    cell.FormatConditions.add Type:=xlExpression, Formula1:= _
+        "=LEN(TRIM(" & cell.Address & "))=0"
+    cell.FormatConditions(cell.FormatConditions.count).SetFirstPriority
+    With cell.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = 10092543
+        .TintAndShade = 0
+    End With
+    cell.FormatConditions(1).StopIfTrue = False
+    Next cell
+End Sub
