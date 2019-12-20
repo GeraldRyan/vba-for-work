@@ -1,0 +1,495 @@
+''Note, not all subs in this module support Option Explicit (yet)
+Sub MasterADP()
+disabler.disable
+On Error Resume Next
+Dim dict As Scripting.Dictionary
+Set dict = New Scripting.Dictionary
+Dim dictY401 As Scripting.Dictionary
+Set dictY401 = New Scripting.Dictionary
+Dim dictRoth As Scripting.Dictionary
+Set dictRoth = New Scripting.Dictionary
+Dim dictMaster As New Scripting.Dictionary
+Set dictMaster = New Scripting.Dictionary
+Dim cell As Range
+Dim testArray(3) As String
+testArray(0) = "Y 401K"
+testArray(1) = "Y FIT"
+testArray(2) = "Y State  1"
+
+Dim i, c, k As Long
+Dim name As String
+Dim myArray(2) As Double
+For Each cell In Application.ActiveSheet.UsedRange
+    If cell.Value = "Y Gross" Then
+        name = Application.ActiveSheet.Cells(cell.Row, 1).Value
+        dict.add name, CDec(Replace(cell.Offset(0, -2).Value, ",", "") & "." & cell.Offset(0, -1).Value)
+        myArray(0) = CDec(Replace(cell.Offset(0, -2).Value, ",", "") & "." & cell.Offset(0, -1).Value)
+        ' hunt for Y 401k in a 10x8 array and add to that dictionary
+        For c = 0 To 8
+            For i = 1 To 10
+                If cell.Offset(i, c).Value = "Y 401K" Then
+                    dictY401.add name, CDec(Replace(cell.Offset(i, c - 2).Value, ",", "") & "." & cell.Offset(i, c - 1).Value)
+                    myArray(2) = CDec(Replace(cell.Offset(i, c - 2).Value, ",", "") & "." & cell.Offset(i, c - 1).Value)
+                End If
+            Next i
+        Next c
+        'hunt for 35Roth
+        For c = -15 To 8
+            For i = 0 To 22
+                If cell.Offset(i, c).Value = "35  ROTH" Then
+                    dictRoth.add name, CDec(Replace(cell.Offset(i, c - 3).Value, ",", "") & "." & cell.Offset(i, c - 2).Value)
+                    myArray(2) = CDec(Replace(cell.Offset(i, c - 3).Value, ",", "") & "." & cell.Offset(i, c - 2).Value)
+                End If
+            Next i
+        Next c
+        
+        dictMaster.add name, myArray
+    End If
+    
+    
+Next
+
+For i = 0 To dictMaster.count - 1
+    Debug.Print (dictMaster.Keys(i) & "   " & dictMaster.Items(i))
+Next
+Call output("MasterADPdict.csv", dict)
+Call output("MasterADP401.csv", dictY401)
+Call output("Roth.csv", dictRoth)
+
+
+disabler.enable
+End Sub
+
+Sub doctorsOf505110()
+disabler.disable
+On Error Resume Next
+Dim dict As Scripting.Dictionary
+Set dict = New Scripting.Dictionary
+Dim cell As Range
+Dim name As String
+For Each cell In Selection
+    If InStr(1, cell.Value, ",") <> 0 Then
+        name = """" & UCase(Replace(Left(cell.Value, InStr(1, cell.Value, Chr(10)) - 1), ",  ", ", ")) & """"
+        wages = Replace(cell.Offset(0, 4).Value, ",", "")
+        dict.add name, wages
+    End If
+Next
+Call output("doctors.csv", dict)
+disabler.enable
+End Sub
+
+
+Sub output(filename As String, dict As Scripting.Dictionary)
+Dim path As String
+Call MkDir("VBATestFolder", "C:\")
+Dim i As Long
+path = "C:\VBATestFolder\" & filename
+Open path For Output As #1
+For i = 0 To dict.count - 1
+    Print #1, dict.Keys(i) & "," & dict.Items(i)
+Next i
+Close #1
+
+For i = 0 To dict.count - 1
+    Debug.Print (dict.Keys(i) & "   " & dict.Items(i))
+Next
+MsgBox ("CSV file saved at " & path)
+
+End Sub
+
+Sub BuildGrossWagesDict()
+disabler.disable
+Dim dict As Scripting.Dictionary
+Set dict = New Scripting.Dictionary
+Dim cell As Range
+Dim a As String
+Dim v As String
+Dim i As Long
+i = 0
+Dim GWpattern As String
+GWpattern = "Gross\s+(\d*\,*\d+\.\d+)"
+
+MsgBox ("This macro collects Gross Wages information for each department and outputs the value to a csv file located at C:\VBATestFolder\dict.csv. Make sure ADP payroll data is active workbook and worksheet")
+Dim lastRow As Long
+lastRow = Application.ActiveSheet.UsedRange.rows.count
+For Each cell In Range("a1:a" & lastRow)
+    If InStr(1, cell.Value, "Dept. Total") <> 0 Then
+        a = cell.Offset(0, 7).Address
+        v = Regex(Range(a), GWpattern)
+        v = Replace(v, ",", "")
+        dict.add Right(cell.Value, 6), v
+        i = i + 1
+    End If
+Next
+
+Call MkDir("VBATestFolder", "C:\")
+Open "C:\VBATestFolder\dict.csv" For Output As #1
+For i = 0 To dict.count - 1
+    Print #1, dict.Keys(i) & "," & dict.Items(i)
+Next i
+Close #1
+
+For i = 0 To dict.count - 1
+    Debug.Print (dict.Keys(i) & "   " & dict.Items(i))
+Next
+MsgBox ("CSV file saved at C:\VBATestFolder\dict.csv")
+
+disabler.enable
+
+End Sub
+
+Sub specialDoctors()
+disabler.disable
+Dim cell As Range
+
+'populate array
+Dim doctorArray(9) As String
+For i = 0 To 9
+    doctorArray(i) = ActiveCell.Offset(i).Value
+Next
+
+disabler.enable
+End Sub
+Sub Dictify()
+'' Makes a dictionary as a CSV file in location below with dept # as key and gross wages as value
+
+Call disabler.disable
+Dim dict As Scripting.Dictionary
+Set dict = New Scripting.Dictionary
+Dim regexObj As RegExp
+Set regexObj = New RegExp
+regexObj.pattern = "\d+\,+\d+\.\d+"
+Dim lastRow As Long
+lastRow = Application.ActiveSheet.UsedRange.rows.count
+Dim value2Add As String
+Dim dict2 As Scripting.Dictionary ' health dictionary
+Set dict2 = New Scripting.Dictionary
+
+
+
+Dim cell As Range
+'dict.add Key:="Apple", Item:="Golden Delicious"
+
+For Each cell In Range("a1:a" & lastRow)
+    If InStr(1, cell.Value, "Dept. Total") <> 0 Then
+        
+        Set theMatches = regexObj.Execute(cell.Offset(0, 7).Value)
+        For Each Match In theMatches
+            value2Add = Match.Value
+            value2Add = Replace(value2Add, ",", "") ''purge the commas for csv purposes. NCN
+            dict.add key:=Right(cell.Value, 6), Item:=value2Add
+            
+'            Dim healthvalue2add As Variant
+'            Dim j As Integer
+'            For j = 1 To 5
+'                If cell.Offset(j, 2).Value = "H" Then
+'                    healthvalue2add = cell.Offset(j, 3).Value
+'                    dict2.add Key:=Right(cell.Value, 6), Item:=healthvalue2add
+'                End If
+'            Next
+            
+        Next
+    End If
+Next
+
+''TO TEST IN THE DEBUGGER IF THE DICTIONARY WAS WELL MADE'''''''''''''''''
+Dim i As Long
+For i = 0 To dict.count - 1
+    Debug.Print dict.Keys(i), dict.Items(i)
+Next i
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+''TO WRITE TO CSV'''''''''''''''''''''''''''''''''
+Open "C:\VBATestFolder\dict.csv" For Output As #1
+For i = 0 To dict.count - 1
+    Print #1, dict.Keys(i) & "," & dict.Items(i)
+Next i
+Close #1
+''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+''TO TRANSFER THE INFORMATION''''''''''''''''''''''''''''''''''''
+'For Each cell In Worksheets("XXX").range("e1:e80") ' & lastRow)
+'    v = Right(cell.Value, 6)
+'    If dict.Exists(v) Then
+'        'MsgBox (v & " Exists as " & dict(Key:=v))
+'        cell.Offset(0, -2).Value = dict(Key:=v)
+'    End If
+'Next
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Call disabler.enable
+End Sub
+
+Sub CopyKeyValueToClipboard()
+disabler.disable
+'PURPOSE: Copy a given text to the clipboard (using DataObject)
+'SOURCE: www.TheSpreadsheetGuru.com
+'NOTES: Must enable Forms Library: Checkmark Tools > References > Microsoft Forms 2.0 Object Library
+
+Dim obj As New DataObject
+Dim txt As String
+Dim rng As Range
+Set rng = Selection
+Dim GWpattern As String
+GWpattern = "Gross\s+(\d*\,*\d+\.\d+)"
+txt = Regex(rng, GWpattern)
+  obj.SetText txt
+  obj.PutInClipboard
+
+disabler.enable
+End Sub
+
+Function Regex(rng As Range, Optional pattern As String = "(\d*\,?\d+\.*\d*)") As String
+Dim stringOne As String
+Dim regexOne As Object
+
+Set regexOne = New RegExp
+Dim Match As Object
+stringOne = rng.Cells(1, 1).Value
+ 
+regexOne.pattern = pattern
+regexOne.Global = True
+regexOne.IgnoreCase = IgnoreCase
+ 
+Set theMatches = regexOne.Execute(stringOne)
+
+If theMatches.count <> 0 Then
+    Set Match = theMatches(0)
+    If Match.SubMatches.count <> 0 Then
+        Regex = Match.SubMatches(0)
+    Else: Regex = Match
+    End If
+Else: Regex = ""
+End If
+
+End Function
+
+
+Sub CopyDept2Clip()
+'PURPOSE: Copy a given text to the clipboard (using DataObject)
+'SOURCE: www.TheSpreadsheetGuru.com
+'NOTES: Must enable Forms Library: Checkmark Tools > References > Microsoft Forms 2.0 Object Library
+
+Dim obj As New DataObject
+Dim txt As String
+Dim cell As Range
+Set cell = Selection.Range("a1")
+txt = Right(cell.Value, Len(cell.Value) - 2)
+    
+'Make object's text equal above string variable
+  obj.SetText txt
+
+'Place DataObject's text into the Clipboard
+  obj.PutInClipboard
+
+'Notify User
+  'MsgBox "There is now text copied to your clipboard!", vbInformation
+
+End Sub
+
+Sub copyValue(Optional bCut As Boolean = False)
+Call disabler.disable
+Dim obj As Object
+Set obj = New DataObject
+Dim txt As String
+Dim cell As Range
+Set cell = Selection.Range("a1")
+txt = cell.Value
+If IsNumeric(Left(txt, 1)) Then
+    txt = Replace(txt, ",", "")
+End If
+    
+'Make object's text equal above string variable
+  obj.SetText txt
+'Place DataObject's text into the Clipboard
+  obj.PutInClipboard
+'Notify User
+  'MsgBox "There is now text copied to your clipboard!", vbInformation
+If bCut = True Then
+    cell.Value = ""
+End If
+Call disabler.enable
+End Sub
+
+Sub cutValue()
+Call copyValue(True)
+End Sub
+Sub GetIndividualItems()
+disabler.disable
+
+Dim cell As Range
+Dim dict As Scripting.Dictionary
+Set dict = New Scripting.Dictionary
+Dim i As Long
+Dim code As String
+i = 0
+Dim key As Variant
+
+MsgBox ("This macro collects specified information for each department. Input the code you want to search for - e.g. 'h' for health, 'o' for dental, 'v' for life insurance, etc. A csv file is created (or overwritten) at C:\VBATestFolder\dict.csv linking the value to the department. Make sure ADP payroll worksheet is active worksheet")
+
+'looking for H (health), O (dental), V as voluntary life (not vacation)
+code = Application.InputBox("Enter the ADP code here exactly as shown on ADP workbook - e.g. 'H', 'O', 'V'", "Input Code")
+code = UCase(code)
+'' CODE FOR HEALTH INSURANCE
+For Each cell In Application.ActiveSheet.UsedRange
+    'H for health, O for dental D for disability (warning can include deferral), V for voluntary life
+    If cell.Value = code Then
+        If code = "V" Or code = "H" Then
+            For j = 0 To 2
+                If InStr(1, cell.Offset(-j, -cell.Column + 1), "Voluntary Ded.") <> 0 Then GoTo vpassed
+            Next
+            GoTo vfailed
+        End If
+vpassed:
+        For j = 1 To 8
+            If InStr(1, cell.Offset(-j, -cell.Column + 1), "Dept. Total") <> 0 Then
+                'MsgBox ("found dept. total as " & Right(cell.Offset(-j, -cell.Column + 1).value, 6))
+                key = Right(cell.Offset(-j, -cell.Column + 1).Value, 6)
+                GoTo loopout
+            End If
+        Next
+loopout:
+        dict.add key, Replace(cell.Offset(0, 1).Value, ",", "")
+        i = i + 1
+    End If
+vfailed:
+Next
+
+
+''CODE FOR DENTAL, HEALTH ETC EXTRACTOR
+'For Each cell In Application.ActiveSheet.UsedRange
+'    If InStr(1, cell.FormulaR1C1, "DENTAL") <> 0 Then
+'    dict.add i, cell.Value
+'    i = i + 1
+'    End If
+'Next
+'Application.Worksheets.add
+If dict.count < 1 Then
+    MsgBox "no matches found"
+End If
+For i = 0 To dict.count - 1
+'    ActiveCell.Offset(i, 0).Value = dict.Keys(i)
+'    ActiveCell.Offset(i, 1).Value = dict.Items(i)
+    'Debug.Print (dict.Keys(i) & " " &
+    Debug.Print (dict.Keys(i) & " " & dict.Items(i))
+Next
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+Call MkDir("VBATestFolder", "C:\")
+Open "C:\VBATestFolder\dict.csv" For Output As #1
+For i = 0 To dict.count - 1
+    Print #1, dict.Keys(i) & "," & dict.Items(i)
+Next i
+Close #1
+
+MsgBox ("CSV file saved at C:\VBATestFolder\dict.csv")
+
+disabler.enable
+End Sub
+
+
+'requires reference to Microsoft Scripting Runtime
+Function MkDir(strDir As String, strPath As String)
+
+Dim fso As New FileSystemObject
+Dim path As String
+
+'examples for what are the input arguments
+'strDir = "Folder"
+'strPath = "C:\"
+
+path = strPath & strDir
+
+If Not fso.FolderExists(path) Then
+
+' doesn't exist, so create the folder
+          fso.CreateFolder path
+
+End If
+
+End Function
+
+Sub CustomRegextoClip()
+disabler.disable
+Dim pattern As String
+pattern = Application.InputBox("Enter the regular expression pattern to find and copy")
+
+Dim obj As New DataObject
+Dim txt As String
+Dim rng As Range
+Set rng = Selection
+txt = Regex(rng, pattern)
+  obj.SetText txt
+  obj.PutInClipboard
+
+disabler.enable
+End Sub
+
+Sub MasterLibby()
+disabler.disable
+On Error Resume Next
+Dim dict As Scripting.Dictionary
+Set dict = New Scripting.Dictionary
+Dim dictYFit As Scripting.Dictionary
+Set dictYFit = New Scripting.Dictionary
+Dim dictState As Scripting.Dictionary
+Set dictState = New Scripting.Dictionary
+
+Dim cell As Range
+Dim i, c As Long
+Dim fit, state As Variant
+Dim name As String
+For Each cell In Application.ActiveSheet.UsedRange
+    If cell.Value = "Y Gross" Then
+        name = """" & Replace(Application.ActiveSheet.Cells(cell.Row, 1).Value, ",", ", ") & """"
+        grossWages = CDec(Replace(cell.Offset(0, -2).Value, ",", "") & "." & cell.Offset(0, -1).Value)
+        dict.add name, grossWages
+
+        ' hunt for Fed income tax in an ixc array and add to that dictionary
+        For c = -5 To 8
+            For i = 1 To 10
+                If cell.Offset(i, c).Value = "Y FIT" Then
+                    fit = CDec(Replace(cell.Offset(i, c - 2).Value, ",", "") & "." & cell.Offset(i, c - 1).Value)
+                    dictYFit.add name, fit
+                    fit = ""
+                End If
+            Next i
+        Next c
+        'hunt for state income tax in array and add to dict
+        For c = -8 To 8
+            For i = 0 To 10
+                If cell.Offset(i, c).Value = "Y State  1" Then
+                    state = CDec(Replace(cell.Offset(i, c - 2).Value, ",", "") & "." & cell.Offset(i, c - 1).Value)
+                    dictState.add name, state
+                    state = ""
+                End If
+            Next i
+        Next c
+    End If
+Next
+
+For i = 0 To dictMaster.count - 1
+    Debug.Print (dictMaster.Keys(i) & "   " & dictMaster.Items(i))
+Next
+Call output("MasterGW.csv", dict)
+Call output("MasterFIT.csv", dictYFit)
+Call output("MasterState.csv", dictState)
+
+
+disabler.enable
+End Sub
+
+
+Sub finderrors()
+
+Dim cell As Range
+Dim key As String
+key = Application.InputBox("Enter the search string")
+For Each cell In Application.ActiveSheet.UsedRange
+If cell.Value = key Then ' "Y FIT" Then
+    If IsNumeric(cell.Offset(0, -2).Value) = False Or IsNumeric(cell.Offset(0, -1).Value) = False Then
+        MsgBox (cell.Address)
+    End If
+End If
+Next
+End Sub
