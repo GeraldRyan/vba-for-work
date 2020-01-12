@@ -1,15 +1,19 @@
 Sub JEfromPOScsvToQBcsv()
+' See Notes Below
 disabler.disable
+Dim matchrange As range: Set matchrange = range("a1:cc1")
 Dim classvaluesdict As Scripting.Dictionary: Set classvaluesdict = New Scripting.Dictionary
-Dim classes(30), classdate(30), sales(30), NPSales(30) As Long
-Dim classeslink(30), classdatelink(30), saleslink(30), NPSaleslink(30) As Long
+Dim accdict As Scripting.Dictionary: Set accdict = New Scripting.Dictionary
+Dim ddict As Scripting.Dictionary: Set ddict = New Scripting.Dictionary
+Dim classes(30), classdate(30) As Long
+Dim classeslink(30), classdatelink(30) As String
 Dim classcount, i, j, rwnumber As Long
 Dim ogWS, Journalws As Worksheet
-Dim indexarray, a1JE As Range
-Dim a1gL As Range
+Dim indexarray, a1JE As range
+Dim a1GL As range
 Set ogWS = Application.ActiveWorkbook.ActiveSheet: rwnumber = 1: Set indexarr = ActiveSheet.UsedRange
-classcount = Range("a1").End(xlDown).Row - 1
-Set a1gL = Range("a1")
+classcount = range("a1").End(xlDown).Row - 1
+Set a1GL = range("a1")
 If Not WorksheetExists("Journal") Then
     Set Journalws = Application.ActiveWorkbook.Worksheets.add(after:=Application.ActiveWorkbook.ActiveSheet)
     Journalws.name = "Journal"
@@ -17,36 +21,67 @@ If Not WorksheetExists("Journal") Then
     Journalws.Activate
 End If
 '' if worksheet is blank or new
-Set a1JE = Range("A1")
+Set a1JE = range("A1")
 If a1JE.Value = "" Then
     a1JE.Value = "Date": a1JE.Offset(0, 1).Value = "Class": a1JE.Offset(0, 2).Value = "Account": a1JE.Offset(0, 3).Value = "Amount": a1JE.Offset(0, 4).Value = "Description"
 End If
 For i = 1 To classcount
     'MsgBox (a1GL.Parent.name)
-    classes(i) = a1gL.Offset(i, 0).Value
-    classeslink(i) = Replace("='" & a1gL.Offset(i, 0).Parent.name & "'!" & a1gL.Offset(i, 0).Address(External:=False), "$", "")
-    classdate(i) = a1gL.Offset(i, 1)
-    classdatelink(i) = Replace("='" & a1gL.Offset(i, 1).Parent.name & "'!" & a1gL.Offset(i, 1).Address(External:=False), "$", "")
-    classvaluesdict.add adj_net_sales_amt, a1gL.Offset(i, 8).Value
-    
+    classes(i) = a1GL.Offset(i, 0).Value
+    classeslink(i) = Replace("='" & a1GL.Offset(i, 0).Parent.name & "'!" & a1GL.Offset(i, 0).Address(External:=False), "$", "")
+    classdate(i) = a1GL.Offset(i, 1)
+    classdatelink(i) = Replace("='" & a1GL.Offset(i, 1).Parent.name & "'!" & a1GL.Offset(i, 1).Address(External:=False), "$", "")
+    classvaluesdict.add 1, Replace("=-'" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "adj_net_sales_amt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 2, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "non_prod_sales_amt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 3, Replace("=-'" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "non_prod_sales_amt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 4, Replace("=-'" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "day_eat_in_tax_amt") - 1).Address(External:=False) & "-'" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "day_takout_tax_amt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 5, Replace("=-'" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "cashos") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 6, Replace("=-'" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "tot_oth_recp_amt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 7, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "gcard_rdm_amt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 8, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "amex_netamt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 9, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "debit_netamt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 10, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "disc_netamt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 11, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "visa_mc_netamt") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 12, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "count_bnk_dpos_amt_a") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 13, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "count_bnk_dpos_amt_b") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 14, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "count_bnk_dpos_amt_c") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 15, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "count_bnk_dpos_amt_d") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 16, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "count_bnk_dpos_amt_e") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 17, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "count_bnk_dpos_amt_f") - 1).Address(External:=False), "$", "")
+    classvaluesdict.add 18, Replace("='" & matchrange.Parent.name & "'!" & a1GL.Offset(i, match(matchrange, "dy_adj_cr_sale_amt") - 1).Address(External:=False), "$", "")
 
-    For j = 0 To classvaluesdict.count
+    
+    accdict.add 1, 3010: accdict.add 2, 3020: accdict.add 3, 8000: accdict.add 4, 2210
+    accdict.add 5, 5220: accdict.add 6, 5130: accdict.add 7, 1071: accdict.add 8, 1071
+    accdict.add 9, 1071: accdict.add 10, 1071: accdict.add 11, 1071: accdict.add 12, 1070
+    accdict.add 13, 1070: accdict.add 14, 1070: accdict.add 15, 1070: accdict.add 16, 1070
+    accdict.add 17, 1070: accdict.add 18, 1100
+    
+    'ddict.add 1, "sales": ddict.add 2, "NP Sales": ddict.add 3, "NP Sales": ddict.add 4, "Sales Tax Payable"
+    
+    For j = 0 To classvaluesdict.count - 1
         a1JE.Offset(rwnumber, 0).Value = classdatelink(i)
         a1JE.Offset(rwnumber, 1).Value = classeslink(i)
-        a1JE.Offset(rwnumber, 2).Value = "Placeholder" ' Account goes here
-        a1JE.Offset(rwnumber, 3).Value = "Placeholder" 'Dictionary Values go here
-        a1JE.Offset(rwnumber, 4).Value = "Placeholder ' Description goes here"
-        
-        
+        If j < accdict.count Then
+            a1JE.Offset(rwnumber, 2).Value = accdict.Items(j)
+            Else
+            a1JE.Offset(rwnumber, 2).Value = " Dict value does not exist"
+        End If
+        'a1JE.Offset(rwnumber, 2).Value = accdict.Items(j) ' Account dict goes here
+        a1JE.Offset(rwnumber, 3).Value = classvaluesdict.Items(j) 'Dictionary Values go here
+        a1JE.Offset(rwnumber, 4).Value = "Placeholder" ' Description goes here
         rwnumber = rwnumber + 1
     Next
-    
+    classvaluesdict.RemoveAll
+    accdict.RemoveAll
 Next
+Journalws.Activate
+    Dim cell As range, count As Long
+    For i = Intersect(range("d:d"), ActiveSheet.UsedRange).count To 0 Step -1
+    If a1JE.Offset(i, 3) = 0 Then a1JE.Offset(i, 4).EntireRow.Delete
+    Next
 
-'dictionary
-
-
-
+a1JE.Select
 disabler.enable
 End Sub
 
@@ -55,7 +90,16 @@ On Error Resume Next ''shouldn't need but just in case
     WorksheetExists = Evaluate("ISREF('" & sName & "'!A1)")
 End Function
 
+Function match(matchrange As range, str As String) As Variant
+match = WorksheetFunction.match(str, matchrange, 0)
+End Function
 
+'Notes
+'Works well when input table is in format as given with titles of headers and exact and complete format.
+'not yet very error robust if exceptions are thrown, can cause user panic
+'currently works with exact sample spreadsheet as given. Need to test it's generality
+'nevertheless, made certain accounts capable of overflowing or expanding such as count_bnk_dpos_amt_a in case goes up to multiple instances
+    'then at end of code I deleted all rows with zero balance in 3rd column. what's the point of a $0.00 JE?
 
 
 
@@ -79,7 +123,6 @@ End Function
 '1100 = dy_adj_cr_sale_amt : Billable
 '
 
-'
 '''Account coding
 '3010 = sales
 '3020 = NP Sales
@@ -89,3 +132,7 @@ End Function
 '5130 = Other Receipts
 '1071
 '
+'
+
+
+
