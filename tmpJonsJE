@@ -1,0 +1,91 @@
+Sub JEfromPOScsvToQBcsv()
+disabler.disable
+Dim classvaluesdict As Scripting.Dictionary: Set classvaluesdict = New Scripting.Dictionary
+Dim classes(30), classdate(30), sales(30), NPSales(30) As Long
+Dim classeslink(30), classdatelink(30), saleslink(30), NPSaleslink(30) As Long
+Dim classcount, i, j, rwnumber As Long
+Dim ogWS, Journalws As Worksheet
+Dim indexarray, a1JE As Range
+Dim a1gL As Range
+Set ogWS = Application.ActiveWorkbook.ActiveSheet: rwnumber = 1: Set indexarr = ActiveSheet.UsedRange
+classcount = Range("a1").End(xlDown).Row - 1
+Set a1gL = Range("a1")
+If Not WorksheetExists("Journal") Then
+    Set Journalws = Application.ActiveWorkbook.Worksheets.add(after:=Application.ActiveWorkbook.ActiveSheet)
+    Journalws.name = "Journal"
+    Else: Set Journalws = Application.ActiveWorkbook.Worksheets("Journal")
+    Journalws.Activate
+End If
+'' if worksheet is blank or new
+Set a1JE = Range("A1")
+If a1JE.Value = "" Then
+    a1JE.Value = "Date": a1JE.Offset(0, 1).Value = "Class": a1JE.Offset(0, 2).Value = "Account": a1JE.Offset(0, 3).Value = "Amount": a1JE.Offset(0, 4).Value = "Description"
+End If
+For i = 1 To classcount
+    'MsgBox (a1GL.Parent.name)
+    classes(i) = a1gL.Offset(i, 0).Value
+    classeslink(i) = Replace("='" & a1gL.Offset(i, 0).Parent.name & "'!" & a1gL.Offset(i, 0).Address(External:=False), "$", "")
+    classdate(i) = a1gL.Offset(i, 1)
+    classdatelink(i) = Replace("='" & a1gL.Offset(i, 1).Parent.name & "'!" & a1gL.Offset(i, 1).Address(External:=False), "$", "")
+    classvaluesdict.add adj_net_sales_amt, a1gL.Offset(i, 8).Value
+    
+
+    For j = 0 To classvaluesdict.count
+        a1JE.Offset(rwnumber, 0).Value = classdatelink(i)
+        a1JE.Offset(rwnumber, 1).Value = classeslink(i)
+        a1JE.Offset(rwnumber, 2).Value = "Placeholder" ' Account goes here
+        a1JE.Offset(rwnumber, 3).Value = "Placeholder" 'Dictionary Values go here
+        a1JE.Offset(rwnumber, 4).Value = "Placeholder ' Description goes here"
+        
+        
+        rwnumber = rwnumber + 1
+    Next
+    
+Next
+
+'dictionary
+
+
+
+disabler.enable
+End Sub
+
+Function WorksheetExists(sName As String) As Boolean
+On Error Resume Next ''shouldn't need but just in case
+    WorksheetExists = Evaluate("ISREF('" & sName & "'!A1)")
+End Function
+
+
+
+
+
+'
+'''Account coding
+'3010 = adj_net_sales_amt = sales
+'3020 = non_prod_sales_amt = NP Sales
+'8000 = (-)non_prod_sales_amt = NP Sales
+'2210 = (-)day_eat_in_tax_amt + (-) day_takout_tax_amt = Sales Tax Payable
+'5220 = (-)cashos = Cash over/short
+'5130 = (-)tot_oth_recp_amt = Other Receipts
+'1071 = gcard_rdm_amt : Gift Cards
+'1071 = amex_netamt : Amex
+'1071 = debit_netamt : Debit
+'1071 = disc_netamt : Disc
+'1071 = visa_mc_netamt : Visa
+'1070 = count_bnk_dpos_amt_a (multiple up to 3+): Cash
+'1070 = count_bnk_dpos_amt_b
+'1070 = count_bnk_dpos_amt_c
+'1070 = count_bnk_dpos_amt_d
+'1100 = dy_adj_cr_sale_amt : Billable
+'
+
+'
+'''Account coding
+'3010 = sales
+'3020 = NP Sales
+'8000 = NP Sales
+'2210 = Sales Tax Payable
+'5220 = Cash over/short
+'5130 = Other Receipts
+'1071
+'
